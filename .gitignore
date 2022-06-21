@@ -1,0 +1,9 @@
+.idea/
+target/
+*.iml
+env/
+venv/
+!requirements.txt
+output*
+__pycache__/
+*.pyc
