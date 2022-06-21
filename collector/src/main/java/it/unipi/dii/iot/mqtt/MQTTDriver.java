@@ -19,7 +19,8 @@ public class MQTTDriver implements MqttCallback {
             mqttClient = new MqttClient(broker, clientId);
             mqttClient.connect();
             mqttClient.setCallback(this);
-            mqttClient.subscribe("charger/*");
+            mqttClient.subscribe("charger/#");
+            System.out.println("Subscribe correctly.");
         } catch (MqttException me) {
             me.printStackTrace();
         }
