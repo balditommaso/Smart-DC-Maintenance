@@ -8,7 +8,7 @@ public class MQTTDriver implements MqttCallback {
 
     // TODO: set in config file
     private MqttClient mqttClient;
-    private String broker = "tcp:127.0.0.1:1883";
+    private String broker = "tcp://127.0.0.1:1883";
     private String clientId = "Collector";
     private int maxAttempt = 10;
     private int secondsToWait = 1000;
