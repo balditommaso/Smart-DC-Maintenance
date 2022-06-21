@@ -43,6 +43,7 @@ public class MQTTDriver implements MqttCallback {
                 Thread.sleep(secondsToWait);
                 mqttClient.connect();
             } catch (InterruptedException | MqttException e) {
+                Thread.currentThread().interrupt();
                 e.printStackTrace();
             }
             if (mqttClient.isConnected())
