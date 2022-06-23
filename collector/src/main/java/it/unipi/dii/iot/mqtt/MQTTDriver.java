@@ -2,13 +2,16 @@ package it.unipi.dii.iot.mqtt;
 
 import org.eclipse.paho.client.mqttv3.*;
 
+import it.unipi.dii.iot.model.Vehicle;
+import it.unipi.dii.iot.persistence.MySQLDriver;
+
 import java.nio.charset.StandardCharsets;
 
 public class MQTTDriver implements MqttCallback {
 
     // TODO: set in config file
     private MqttClient mqttClient;
-    private String broker = "tcp://127.0.0.1:1883";
+    private String broker = "tcp://172.16.4.159:1883";
     private String clientId = "Collector";
     private int maxAttempt = 10;
     private int secondsToWait = 1000;
@@ -54,7 +57,24 @@ public class MQTTDriver implements MqttCallback {
     @Override
     public void messageArrived(String topic, MqttMessage mqttMessage) throws Exception {
         System.out.println(String.format("[%s] %s", topic, new String(mqttMessage.getPayload())));
+        
+        String[] tokens = topic.split("/");
+        String type = tokens[0];
+        String id = tokens[1];
+        String action = tokens[2];
+        
+        String[] fields = new String(mqttMessage.getPayload()).split("$");
+        String baseStation = fields[0];       
+        Boolean locked = Boolean.parseBoolean(fields[1]);
+        
         // TODO: compute traffic, store data in DB
+        switch(action) {
+        	case "register":
+        		Vehicle vehicle = new Vehicle(id, type, "", locked);
+        		MySQLDriver.getInstance().insertVehicle(vehicle);
+        	break;
+        
+        }
     }
 
     @Override

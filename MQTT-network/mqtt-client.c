@@ -27,7 +27,7 @@
 
 /*---------------------------------------------------------------------------*/
 /* MQTT broker address. */
-#define MQTT_CLIENT_BROKER_IP_ADDR "172.16.4.159"
+#define MQTT_CLIENT_BROKER_IP_ADDR "fe80::21d:d8ff:feb7:3ac6"
 
 static const char *broker_ip = MQTT_CLIENT_BROKER_IP_ADDR;
 
@@ -167,10 +167,7 @@ static bool have_connectivity(void)
     if (uip_ds6_get_global(ADDR_PREFERRED) == NULL || uip_ds6_defrt_choose() == NULL) {
         return false;
     }
-<<<<<<< HEAD
-    NETSTACK_ROUTING.get_root_ipaddr(&border_router_ipaddr)
-=======
->>>>>>> 5ba0312227fcf04c29eee6eba4485e83c4d1657e
+    NETSTACK_ROUTING.get_root_ipaddr(&border_router_ipaddr);
     return true;
 }
 
@@ -180,17 +177,13 @@ char broker_address[CONFIG_IP_ADDR_STR_LEN];
 /*---------------------------------------------------------------------------*/
 PROCESS_THREAD(mqtt_client_process, ev, data)
 {
-<<<<<<< HEAD
+
     button_hal_button_t* btn;
 
     PROCESS_BEGIN();
 
     btn = button_hal_get_by_index(0);
 
-=======
-    PROCESS_BEGIN();
-
->>>>>>> 5ba0312227fcf04c29eee6eba4485e83c4d1657e
     printf("MQTT Client Process\n");
 
     // Initialize the ClientID as MAC address
@@ -208,24 +201,13 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
     etimer_set(&periodic_timer, STATE_MACHINE_PERIODIC);
     /* Main loop */
     while(1) {
-<<<<<<< HEAD
 
         PROCESS_YIELD();
 
         if ((ev == PROCESS_EVENT_TIMER && data == &periodic_timer) || 
             (ev == PROCESS_EVENT_POLL) || 
             (ev == button_hal_press_event) ||
-            (btn->press_duration_seconds > 5))
-            
-=======
-
-        PROCESS_YIELD();
-
-        if ((ev == PROCESS_EVENT_TIMER && data == &periodic_timer) || 
-            (ev == PROCESS_EVENT_POLL) || 
-            (ev == button_hal_press_event))
->>>>>>> 5ba0312227fcf04c29eee6eba4485e83c4d1657e
-        {
+            (btn->press_duration_seconds > 5)) {
 			  			  
 		    if (state==STATE_INIT)
             {
@@ -263,14 +245,17 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
 			  
             if (state == STATE_SUBSCRIBED)
             {
-<<<<<<< HEAD
                 sprintf(pub_topic, "bike/%s/", client_id);
                 btn = (button_hal_button_t*)data;
                 // add
                 if (btn->press_duration_seconds > 5) 
                 {
                     strcat(pub_topic, "add");
-                    sprintf(app_buffer, "%s$%d", border_router_ipaddr, locked);
+                    
+                  //  char buf[16];
+                  //  memcpy(&border_router_ipaddr, buf[0], 16);
+                    
+                    sprintf(app_buffer, "%s$%d", "fe201:1:1", locked);
                     
                     LOG_INFO("Status: %s\n", app_buffer);
                     mqtt_publish(&conn, NULL, pub_topic, (uint8_t *)app_buffer,
@@ -298,7 +283,6 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
                     mqtt_publish(&conn, NULL, pub_topic, (uint8_t *)app_buffer,
                         strlen(app_buffer), MQTT_QOS_LEVEL_0, MQTT_RETAIN_OFF);
                 }
-=======
                 // lock
                 sprintf(pub_topic, "bike/%s/", client_id);
                 if (ev == button_hal_press_event) 
@@ -320,14 +304,11 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
                     locked = !locked;
                     LOG_INFO("Status: %s\n", app_buffer);
                     mqtt_publish(&conn, NULL, pub_topic, (uint8_t *)app_buffer,
-                    strlen(app_buffer), MQTT_QOS_LEVEL_0, MQTT_RETAIN_OFF);
+                    	strlen(app_buffer), MQTT_QOS_LEVEL_0, MQTT_RETAIN_OFF);
                 }
->>>>>>> 5ba0312227fcf04c29eee6eba4485e83c4d1657e
                 // battery
 
                 //position
-                
-                    
                 
             
             } 
@@ -338,7 +319,8 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
             }
 		
 		etimer_set(&periodic_timer, STATE_MACHINE_PERIODIC); 
-    }
-  }
-  PROCESS_END();
+    	}
+    	
+  	}
+  	PROCESS_END();
 }
