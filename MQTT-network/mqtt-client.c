@@ -4,6 +4,8 @@
 #include "net/ipv6/uip.h"
 #include "net/ipv6/uip-icmp6.h"
 #include "net/ipv6/sicslowpan.h"
+#include "net/ipv6/simple-udp.h"
+#include "net/netstack.h"
 #include "sys/etimer.h"
 #include "sys/ctimer.h"
 #include "lib/sensors.h"
@@ -25,7 +27,7 @@
 
 /*---------------------------------------------------------------------------*/
 /* MQTT broker address. */
-#define MQTT_CLIENT_BROKER_IP_ADDR "fd00::1"
+#define MQTT_CLIENT_BROKER_IP_ADDR "172.16.4.159"
 
 static const char *broker_ip = MQTT_CLIENT_BROKER_IP_ADDR;
 
@@ -72,6 +74,7 @@ static struct etimer periodic_timer;
 // global variable for the application
 // static bool alert_on = false;
 static bool locked = true;
+static uip_ipaddr_t border_router_ipaddr;
 // static int battery_lvl = 100;
 
 /*---------------------------------------------------------------------------*/
@@ -164,6 +167,10 @@ static bool have_connectivity(void)
     if (uip_ds6_get_global(ADDR_PREFERRED) == NULL || uip_ds6_defrt_choose() == NULL) {
         return false;
     }
+<<<<<<< HEAD
+    NETSTACK_ROUTING.get_root_ipaddr(&border_router_ipaddr)
+=======
+>>>>>>> 5ba0312227fcf04c29eee6eba4485e83c4d1657e
     return true;
 }
 
@@ -173,8 +180,17 @@ char broker_address[CONFIG_IP_ADDR_STR_LEN];
 /*---------------------------------------------------------------------------*/
 PROCESS_THREAD(mqtt_client_process, ev, data)
 {
+<<<<<<< HEAD
+    button_hal_button_t* btn;
+
     PROCESS_BEGIN();
 
+    btn = button_hal_get_by_index(0);
+
+=======
+    PROCESS_BEGIN();
+
+>>>>>>> 5ba0312227fcf04c29eee6eba4485e83c4d1657e
     printf("MQTT Client Process\n");
 
     // Initialize the ClientID as MAC address
@@ -192,12 +208,23 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
     etimer_set(&periodic_timer, STATE_MACHINE_PERIODIC);
     /* Main loop */
     while(1) {
+<<<<<<< HEAD
+
+        PROCESS_YIELD();
+
+        if ((ev == PROCESS_EVENT_TIMER && data == &periodic_timer) || 
+            (ev == PROCESS_EVENT_POLL) || 
+            (ev == button_hal_press_event) ||
+            (btn->press_duration_seconds > 5))
+            
+=======
 
         PROCESS_YIELD();
 
         if ((ev == PROCESS_EVENT_TIMER && data == &periodic_timer) || 
             (ev == PROCESS_EVENT_POLL) || 
             (ev == button_hal_press_event))
+>>>>>>> 5ba0312227fcf04c29eee6eba4485e83c4d1657e
         {
 			  			  
 		    if (state==STATE_INIT)
@@ -236,6 +263,42 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
 			  
             if (state == STATE_SUBSCRIBED)
             {
+<<<<<<< HEAD
+                sprintf(pub_topic, "bike/%s/", client_id);
+                btn = (button_hal_button_t*)data;
+                // add
+                if (btn->press_duration_seconds > 5) 
+                {
+                    strcat(pub_topic, "add");
+                    sprintf(app_buffer, "%s$%d", border_router_ipaddr, locked);
+                    
+                    LOG_INFO("Status: %s\n", app_buffer);
+                    mqtt_publish(&conn, NULL, pub_topic, (uint8_t *)app_buffer,
+                        strlen(app_buffer), MQTT_QOS_LEVEL_0, MQTT_RETAIN_OFF);
+                }
+                // lock
+                if (ev == button_hal_press_event) 
+                {
+                    strcat(pub_topic, "status");
+                    if (locked) 
+                    {
+                        leds_off(LEDS_ALL);
+                        leds_set(LEDS_NUM_TO_MASK(LEDS_GREEN));
+                        sprintf(app_buffer, "%s", "unlock");
+                    } 
+                    else 
+                    {
+                        leds_off(LEDS_ALL);
+                        leds_set(LEDS_NUM_TO_MASK(LEDS_RED));
+                        sprintf(app_buffer, "%s", "lock");
+                    }
+
+                    locked = !locked;
+                    LOG_INFO("Status: %s\n", app_buffer);
+                    mqtt_publish(&conn, NULL, pub_topic, (uint8_t *)app_buffer,
+                        strlen(app_buffer), MQTT_QOS_LEVEL_0, MQTT_RETAIN_OFF);
+                }
+=======
                 // lock
                 sprintf(pub_topic, "bike/%s/", client_id);
                 if (ev == button_hal_press_event) 
@@ -259,6 +322,7 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
                     mqtt_publish(&conn, NULL, pub_topic, (uint8_t *)app_buffer,
                     strlen(app_buffer), MQTT_QOS_LEVEL_0, MQTT_RETAIN_OFF);
                 }
+>>>>>>> 5ba0312227fcf04c29eee6eba4485e83c4d1657e
                 // battery
 
                 //position
