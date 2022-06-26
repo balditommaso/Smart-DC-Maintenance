@@ -1,30 +1,22 @@
 package it.unipi.dii.iot.persistence;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.SQLIntegrityConstraintViolationException;
-
+import com.zaxxer.hikari.HikariDataSource;
 import it.unipi.dii.iot.config.ConfigParameters;
 import it.unipi.dii.iot.model.Vehicle;
 
+import javax.sql.DataSource;
+import javax.xml.crypto.Data;
+import java.sql.*;
+
 public class MySQLDriver {
-	private static MySQLDriver instance = null;
+    private static MySQLDriver instance = null;
+    private static String databaseIp;
+    private static int databasePort;
+    private static String databaseUsername;
+    private static String databasePassword;
+    private static String databaseName;
+    private DataSource dataSource = createDataSource();
 
-	private static String databaseIp;
-	private static int databasePort;
-	private static String databaseUsername;
-	private static String databasePassword;
-	private static String databaseName;
-	    
-	public static MySQLDriver getInstance() {
-	   if(instance == null)
-		   instance = new MySQLDriver();
-
-	   return instance;
-	}
-	
     private MySQLDriver() {
         ConfigParameters configParameters = new ConfigParameters("config.properties");
         databaseIp = configParameters.getDatabaseIp();
@@ -33,7 +25,22 @@ public class MySQLDriver {
         databasePassword = configParameters.getDatabasePassword();
         databaseName = configParameters.getDatabaseName();
     }
-    
+
+    private DataSource createDataSource() {
+        HikariDataSource ds = new HikariDataSource();
+        ds.setJdbcUrl("jdbc:mysql://"+ databaseIp + ":" + databasePort + "/" + databaseName);
+        ds.setUsername(databaseUsername);
+        ds.setPassword(databasePassword);
+
+        return ds;
+    }
+	public static MySQLDriver getInstance() {
+	   if(instance == null)
+		   instance = new MySQLDriver();
+
+	   return instance;
+	}
+
     private Connection getConnection() throws SQLException {
         return DriverManager.getConnection("jdbc:mysql://"+ databaseIp + ":" + databasePort +
                         "/" + databaseName + "?zeroDateTimeBehavior=CONVERT_TO_NULL&serverTimezone=CET",
@@ -42,7 +49,8 @@ public class MySQLDriver {
     
     public void insertVehicle (Vehicle vehicle) {
         try (
-                Connection connection = getConnection();
+                //Connection connection = getConnection();
+                Connection connection = dataSource.getConnection();
                 PreparedStatement statement = connection.prepareStatement("INSERT INTO vehicles (id, type, base_station, locked) VALUES (?, ?, ?, ?)")
         ){
             statement.setString(1, vehicle.getId());
@@ -53,10 +61,27 @@ public class MySQLDriver {
             
         }
         catch (final SQLIntegrityConstraintViolationException e) {
-        	System.out.println(String.format("INFO: vehicle %s already registered in the database.", vehicle.getId()));
+            System.out.printf("INFO: vehicle %s already registered in the database.%n", vehicle.getId());
         }
         catch (final SQLException e) { 
             e.printStackTrace();
+        }
+    }
+
+    public void updateVehicle (Vehicle vehicle) {
+        try (
+                //Connection connection = getConnection();
+                Connection connection = dataSource.getConnection();
+                PreparedStatement statement = connection.prepareStatement("UPDATE vehicles SET locked = ? WHERE id = ?")
+        ){
+            statement.setBoolean(1, vehicle.getLocked());
+            statement.setString(2, vehicle.getId());
+            if (statement.executeUpdate() != 1) throw new Exception("ERROR: not valid id " + vehicle.getId());
+        }
+        catch (final SQLException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
         }
     }
 }

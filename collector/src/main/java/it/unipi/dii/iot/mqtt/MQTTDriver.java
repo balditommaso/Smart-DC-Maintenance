@@ -1,5 +1,6 @@
 package it.unipi.dii.iot.mqtt;
 
+import it.unipi.dii.iot.config.ConfigParameters;
 import org.eclipse.paho.client.mqttv3.*;
 
 import it.unipi.dii.iot.model.Vehicle;
@@ -9,15 +10,19 @@ import java.nio.charset.StandardCharsets;
 
 public class MQTTDriver implements MqttCallback {
 
-    // TODO: set in config file
+    // TODO: clientId configurable
     private MqttClient mqttClient;
-    private String broker = "tcp://172.16.4.159:1883";
-    private String clientId = "Collector";
-    private int maxAttempt = 10;
-    private int secondsToWait = 1000;
+    private final String clientId;
+    private final int maxAttempt;
+    private final int secondsToWait;
 
 
     public MQTTDriver () {
+        ConfigParameters configParameters = new ConfigParameters("config.properties");
+        clientId = "Collector1";
+        maxAttempt = configParameters.getMaxAttempt();
+        secondsToWait = configParameters.getSecondsToWait();
+        String broker = "tcp://" + configParameters.getBrokerIp() + ":" + configParameters.getBrokerPort();
         try {
             mqttClient = new MqttClient(broker, clientId);
             mqttClient.connect();
@@ -53,10 +58,10 @@ public class MQTTDriver implements MqttCallback {
                 break;
         }
     }
-
+    // TODO: compute traffic, store data in DB
     @Override
     public void messageArrived(String topic, MqttMessage mqttMessage) throws Exception {
-        System.out.println(String.format("[%s] %s", topic, new String(mqttMessage.getPayload())));
+        System.out.printf("[%s] %s%n", topic, new String(mqttMessage.getPayload()));
         
         String[] tokens = topic.split("/");
         String type = tokens[0];
@@ -66,14 +71,17 @@ public class MQTTDriver implements MqttCallback {
         String[] fields = new String(mqttMessage.getPayload()).split("$");
         String baseStation = fields[0];       
         Boolean locked = Boolean.parseBoolean(fields[1]);
-        
-        // TODO: compute traffic, store data in DB
-        switch(action) {
-        	case "register":
-        		Vehicle vehicle = new Vehicle(id, type, "", locked);
-        		MySQLDriver.getInstance().insertVehicle(vehicle);
-        	break;
-        
+        if (type.equals("bike")) {
+            Vehicle vehicle = new Vehicle(id, type, clientId, locked);
+            switch(action) {
+                case "add":
+                    MySQLDriver.getInstance().insertVehicle(vehicle);
+                    break;
+                case "status":
+                    MySQLDriver.getInstance().updateVehicle(vehicle);
+            }
+        } else {
+            System.err.println("MQTT_NET: not valid type.");
         }
     }
 

@@ -9,7 +9,12 @@ public class ConfigParameters {
     private String databaseUsername;
     private String databasePassword;
     private String databaseName;
-    
+
+    private String brokerIp;
+    private int brokerPort;
+    private int maxAttempt;
+    private int secondsToWait;
+
     public ConfigParameters(String configFilePath) {
     	try{
             FileInputStream fis = new FileInputStream(configFilePath);
@@ -21,6 +26,11 @@ public class ConfigParameters {
             databaseUsername = prop.getProperty("databaseUsername");
             databasePassword = prop.getProperty("databasePassword");
             databaseName = prop.getProperty("databaseName");
+
+            brokerIp = prop.getProperty("brokerIp");
+            brokerPort = Integer.parseInt(prop.getProperty("brokerPort"));
+            maxAttempt = Integer.parseInt(prop.getProperty("maxAttempt"));
+            secondsToWait = Integer.parseInt(prop.getProperty("secondsToWait"));
         }
         catch(Exception e){
             e.printStackTrace();
@@ -38,4 +48,20 @@ public class ConfigParameters {
     public String getDatabaseUsername() { return databaseUsername; }
     public String getDatabasePassword() { return databasePassword; }
     public String getDatabaseName() { return databaseName; }
+
+    public String getBrokerIp() {
+        return brokerIp;
+    }
+
+    public int getBrokerPort() {
+        return brokerPort;
+    }
+
+    public int getMaxAttempt() {
+        return maxAttempt;
+    }
+
+    public int getSecondsToWait() {
+        return secondsToWait;
+    }
 }

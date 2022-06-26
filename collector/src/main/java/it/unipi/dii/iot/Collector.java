@@ -10,6 +10,5 @@ public class Collector
     public static void main( String[] args )
     {
         MQTTDriver mqttDriver = new MQTTDriver();
-        
     }
 }
