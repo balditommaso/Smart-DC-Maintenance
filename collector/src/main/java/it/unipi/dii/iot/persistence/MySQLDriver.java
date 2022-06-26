@@ -1,6 +1,6 @@
 package it.unipi.dii.iot.persistence;
 
-import com.zaxxer.hikari.HikariDataSource;
+
 import it.unipi.dii.iot.config.ConfigParameters;
 import it.unipi.dii.iot.model.Vehicle;
 
@@ -15,7 +15,7 @@ public class MySQLDriver {
     private static String databaseUsername;
     private static String databasePassword;
     private static String databaseName;
-    private DataSource dataSource = createDataSource();
+    //private DataSource dataSource = null;
 
     private MySQLDriver() {
         ConfigParameters configParameters = new ConfigParameters("config.properties");
@@ -24,8 +24,9 @@ public class MySQLDriver {
         databaseUsername = configParameters.getDatabaseUsername();
         databasePassword = configParameters.getDatabasePassword();
         databaseName = configParameters.getDatabaseName();
+        // dataSource = createDataSource();
     }
-
+    /*
     private DataSource createDataSource() {
         HikariDataSource ds = new HikariDataSource();
         ds.setJdbcUrl("jdbc:mysql://"+ databaseIp + ":" + databasePort + "/" + databaseName);
@@ -34,11 +35,13 @@ public class MySQLDriver {
 
         return ds;
     }
-	public static MySQLDriver getInstance() {
-	   if(instance == null)
-		   instance = new MySQLDriver();
+    */
 
-	   return instance;
+	public static MySQLDriver getInstance() {
+        if(instance == null)
+            instance = new MySQLDriver();
+
+        return instance;
 	}
 
     private Connection getConnection() throws SQLException {
@@ -49,8 +52,8 @@ public class MySQLDriver {
     
     public void insertVehicle (Vehicle vehicle) {
         try (
-                //Connection connection = getConnection();
-                Connection connection = dataSource.getConnection();
+                Connection connection = getConnection();
+                //Connection connection = dataSource.getConnection();
                 PreparedStatement statement = connection.prepareStatement("INSERT INTO vehicles (id, type, base_station, locked) VALUES (?, ?, ?, ?)")
         ){
             statement.setString(1, vehicle.getId());
@@ -70,8 +73,8 @@ public class MySQLDriver {
 
     public void updateVehicle (Vehicle vehicle) {
         try (
-                //Connection connection = getConnection();
-                Connection connection = dataSource.getConnection();
+                Connection connection = getConnection();
+                //Connection connection = dataSource.getConnection();
                 PreparedStatement statement = connection.prepareStatement("UPDATE vehicles SET locked = ? WHERE id = ?")
         ){
             statement.setBoolean(1, vehicle.getLocked());

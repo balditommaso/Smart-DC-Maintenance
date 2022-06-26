@@ -36,7 +36,7 @@ public class MQTTDriver implements MqttCallback {
 
     public void publish(String id, String topic, String message) {
         try {
-            mqttClient.publish(topic + "/" + id, new MqttMessage(message.getBytes(StandardCharsets.UTF_8)));
+            mqttClient.publish(topic + "/" + id, new MqttMessage(message.getBytes()));
         } catch (MqttException me) {
             me.printStackTrace();
         }
