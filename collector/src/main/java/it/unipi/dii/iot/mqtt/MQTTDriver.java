@@ -1,12 +1,9 @@
 package it.unipi.dii.iot.mqtt;
 
 import it.unipi.dii.iot.config.ConfigParameters;
-import org.eclipse.paho.client.mqttv3.*;
-
 import it.unipi.dii.iot.model.Vehicle;
 import it.unipi.dii.iot.persistence.MySQLDriver;
-
-import java.nio.charset.StandardCharsets;
+import org.eclipse.paho.client.mqttv3.*;
 
 public class MQTTDriver implements MqttCallback {
 
@@ -27,7 +24,7 @@ public class MQTTDriver implements MqttCallback {
             mqttClient = new MqttClient(broker, clientId);
             mqttClient.connect();
             mqttClient.setCallback(this);
-            mqttClient.subscribe("charger/#");
+            mqttClient.subscribe("bike/#");
             System.out.println("Subscribe correctly.");
         } catch (MqttException me) {
             me.printStackTrace();
@@ -71,18 +68,19 @@ public class MQTTDriver implements MqttCallback {
         String[] fields = new String(mqttMessage.getPayload()).split("$");
         String baseStation = fields[0];       
         Boolean locked = Boolean.parseBoolean(fields[1]);
-        if (type.equals("bike")) {
-            Vehicle vehicle = new Vehicle(id, type, clientId, locked);
-            switch(action) {
-                case "add":
-                    MySQLDriver.getInstance().insertVehicle(vehicle);
-                    break;
-                case "status":
-                    MySQLDriver.getInstance().updateVehicle(vehicle);
+
+        Vehicle vehicle = new Vehicle(id, type, clientId, locked);
+        switch(action) {
+            case "add": {
+                MySQLDriver.getInstance().insertVehicle(vehicle);
+                break;
             }
-        } else {
-            System.err.println("MQTT_NET: not valid type.");
+            case "status": {
+                MySQLDriver.getInstance().updateVehicle(vehicle);
+                break;
+            }
         }
+
     }
 
     @Override
