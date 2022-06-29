@@ -34,7 +34,7 @@ public class MySQLManager {
         }
     }
 
-    public void updateVehicle (Vehicle vehicle) {
+    public int updateVehicle (Vehicle vehicle) {
         System.out.println("UPDATE");
         try (
                 PreparedStatement statement = connection.prepareStatement("UPDATE vehicles SET locked = ? WHERE id = ?")
@@ -45,8 +45,11 @@ public class MySQLManager {
         }
         catch (final SQLException e) {
             e.printStackTrace();
+            return -1;
         } catch (Exception e) {
             System.err.println(e.getMessage());
+            return 1;
         }
+        return 0;
     }
 }
