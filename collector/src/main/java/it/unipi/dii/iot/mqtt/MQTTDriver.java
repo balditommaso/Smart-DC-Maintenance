@@ -77,7 +77,7 @@ public class MQTTDriver implements MqttCallback {
 
         switch(action) {
             case "status": {
-                Boolean locked = Boolean.parseBoolean(fields[0]);
+                Boolean locked = fields[0].equals("lock");
                 Vehicle vehicle = new Vehicle(id, type, clientId, locked);
                 if (mySQLManager.updateVehicle(vehicle) == 1) {
                     mySQLManager.insertVehicle(vehicle);
