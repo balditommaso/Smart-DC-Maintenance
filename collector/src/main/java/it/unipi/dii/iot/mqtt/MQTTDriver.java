@@ -74,16 +74,16 @@ public class MQTTDriver implements MqttCallback {
         String action = tokens[2];
         
         String[] fields = new String(mqttMessage.getPayload()).split("$");
-        String baseStation = fields[0];       
-        Boolean locked = Boolean.parseBoolean(fields[1]);
 
-        Vehicle vehicle = new Vehicle(id, type, clientId, locked);
         switch(action) {
             case "add": {
+                Vehicle vehicle = new Vehicle(id, type, clientId, true);
                 mySQLManager.insertVehicle(vehicle);
                 break;
             }
             case "status": {
+                Boolean locked = Boolean.parseBoolean(fields[0]);
+                Vehicle vehicle = new Vehicle(id, type, clientId, locked);
                 mySQLManager.updateVehicle(vehicle);
                 break;
             }
