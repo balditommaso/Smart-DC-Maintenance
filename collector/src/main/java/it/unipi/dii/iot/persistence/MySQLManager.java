@@ -35,6 +35,7 @@ public class MySQLManager {
     }
 
     public void updateVehicle (Vehicle vehicle) {
+        System.out.println("UPDATE");
         try (
                 PreparedStatement statement = connection.prepareStatement("UPDATE vehicles SET locked = ? WHERE id = ?")
         ){
