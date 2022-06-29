@@ -61,6 +61,7 @@ public class MQTTDriver implements MqttCallback {
             if (mqttClient.isConnected())
                 break;
         }
+        System.exit(1);
     }
     // TODO: compute traffic, store data in DB
     @Override
