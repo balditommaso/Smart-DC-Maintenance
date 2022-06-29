@@ -3,11 +3,15 @@ package it.unipi.dii.iot.mqtt;
 import it.unipi.dii.iot.config.ConfigParameters;
 import it.unipi.dii.iot.model.Vehicle;
 import it.unipi.dii.iot.persistence.MySQLDriver;
+import it.unipi.dii.iot.persistence.MySQLManager;
 import org.eclipse.paho.client.mqttv3.*;
+
+import java.sql.SQLException;
 
 public class MQTTDriver implements MqttCallback {
 
     // TODO: clientId configurable
+    private MySQLManager mySQLManager;
     private MqttClient mqttClient;
     private final String clientId;
     private final int maxAttempt;
@@ -21,6 +25,7 @@ public class MQTTDriver implements MqttCallback {
         secondsToWait = configParameters.getSecondsToWait();
         String broker = "tcp://" + configParameters.getBrokerIp() + ":" + configParameters.getBrokerPort();
         try {
+            mySQLManager = new MySQLManager(MySQLDriver.getConnection());
             mqttClient = new MqttClient(broker, clientId);
             mqttClient.connect();
             mqttClient.setCallback(this);
@@ -28,6 +33,8 @@ public class MQTTDriver implements MqttCallback {
             System.out.println("Subscribe correctly.");
         } catch (MqttException me) {
             me.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
@@ -72,11 +79,11 @@ public class MQTTDriver implements MqttCallback {
         Vehicle vehicle = new Vehicle(id, type, clientId, locked);
         switch(action) {
             case "add": {
-                MySQLDriver.getInstance().insertVehicle(vehicle);
+                mySQLManager.insertVehicle(vehicle);
                 break;
             }
             case "status": {
-                MySQLDriver.getInstance().updateVehicle(vehicle);
+                mySQLManager.updateVehicle(vehicle);
                 break;
             }
         }
