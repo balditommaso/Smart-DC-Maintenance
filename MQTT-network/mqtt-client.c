@@ -95,8 +95,11 @@ static void blinking(void *ptr)
         blinking_count++;
         leds_single_toggle(LEDS_RED);
         ctimer_reset(&blinking_timer);
+    } 
+    else 
+    {
+        blinking_count = 0;
     }
-    blinking_count = 0;
 }
 
 
