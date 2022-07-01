@@ -67,10 +67,13 @@ static char sub_topic[TOPIC_SIZE];
 // Periodic timer to check the state of the MQTT client
 #define STATE_MACHINE_PERIODIC     (CLOCK_SECOND >> 1)
 static struct etimer periodic_timer;
-
+static struct ctimer blinking_timer;
 // global variable for the application
+#define ALERT_BLINK     3
+#define BLINK_PERIOD    2
 // static bool alert_on = false;
-static bool locked = true;
+static bool active = false;
+static int blinking_count = 0;
 // static int battery_lvl = 100;
 
 /*---------------------------------------------------------------------------*/
@@ -83,6 +86,19 @@ static char app_buffer[APP_BUFFER_SIZE];
 /*---------------------------------------------------------------------------*/
 static struct mqtt_message *msg_ptr = 0;
 static struct mqtt_connection conn;
+/*---------------------------------------------------------------------------*/
+// utility function
+static void blinking(void *ptr)
+{
+    if (blinking_count < ALERT_BLINK*2) 
+    {
+        blinking_count++;
+        leds_single_toggle(LEDS_RED);
+        ctimer_reset(&blinking_timer);
+    }
+    blinking_count = 0;
+}
+
 
 /*---------------------------------------------------------------------------*/
 PROCESS(mqtt_client_process, "MQTT Client");
@@ -92,14 +108,13 @@ static void pub_handler(const char *topic, uint16_t topic_len, const uint8_t *ch
 {
     printf("Pub Handler: topic='%s' (len=%u), chunk_len=%u\n", topic, topic_len, chunk_len);
     char target[TOPIC_SIZE];
-    // alert user too far from city center
-    sprintf(target, "bike/%s/alert", client_id);
+    // alert user in danger
+    sprintf(target, "band/%s/alert", client_id);
     if (strcmp(topic, target) == 0) 
     {
         printf("Received alert\n");
         printf("%s\n", chunk);
-        leds_off(LEDS_ALL);
-        leds_set(LEDS_NUM_TO_MASK(LEDS_RED));   // blinking
+        ctimer_set(&blinking_timer, CLOCK_SECOND * BLINK_PERIOD, blinking, NULL);
         return;
     }
 }
@@ -170,14 +185,14 @@ static bool have_connectivity(void)
 
 mqtt_status_t status;
 char broker_address[CONFIG_IP_ADDR_STR_LEN];
-button_hal_button_t* btn;
+
 /*---------------------------------------------------------------------------*/
 PROCESS_THREAD(mqtt_client_process, ev, data)
 {
 
     PROCESS_BEGIN();
 
-    btn = button_hal_get_by_index(0);
+
 
     printf("MQTT Client Process\n");
 
@@ -201,8 +216,7 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
 
         if ((ev == PROCESS_EVENT_TIMER && data == &periodic_timer) || 
             (ev == PROCESS_EVENT_POLL) || 
-            (ev == button_hal_press_event) ||
-            (btn->press_duration_seconds > 5)) 
+            (ev == button_hal_press_event)) 
         {
 			  			  
 		    if (state==STATE_INIT)
@@ -242,43 +256,33 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
 			  
             if (state == STATE_SUBSCRIBED)
             {
-                sprintf(pub_topic, "bike/%s/", client_id);
-                btn = (button_hal_button_t*)data;
-                // add
-                if (btn->press_duration_seconds > 5) 
-                {
-                    strcat(pub_topic, "add");
-                    sprintf(app_buffer, "%d", locked);
-                    
-                    LOG_INFO("Status: %s\n", app_buffer);
-                    mqtt_publish(&conn, NULL, pub_topic, (uint8_t *)app_buffer,
-                        strlen(app_buffer), MQTT_QOS_LEVEL_0, MQTT_RETAIN_OFF);
-                }
-                // lock
+                sprintf(pub_topic, "band/%s/", client_id);
+                
+                // active
                 if (ev == button_hal_press_event) 
                 {
                     strcat(pub_topic, "status");
-                    if (locked) 
+                    if (!active) 
                     {
                         leds_off(LEDS_ALL);
                         leds_set(LEDS_NUM_TO_MASK(LEDS_GREEN));
-                        sprintf(app_buffer, "%s", "unlock");
+                        sprintf(app_buffer, "%s", "active");
                     } 
                     else 
                     {
                         leds_off(LEDS_ALL);
                         leds_set(LEDS_NUM_TO_MASK(LEDS_RED));
-                        sprintf(app_buffer, "%s", "lock");
+                        sprintf(app_buffer, "%s", "disactive");
                     }
 
-                    locked = !locked;
+                    active = !active;
                     LOG_INFO("Status: %s\n", app_buffer);
                     mqtt_publish(&conn, NULL, pub_topic, (uint8_t *)app_buffer,
                         strlen(app_buffer), MQTT_QOS_LEVEL_0, MQTT_RETAIN_OFF);
                 }
                 // battery
 
-                //position
+                // heart-rate
                 
             
             } 
