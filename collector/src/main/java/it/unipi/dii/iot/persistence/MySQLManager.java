@@ -1,6 +1,6 @@
 package it.unipi.dii.iot.persistence;
 
-import it.unipi.dii.iot.model.Vehicle;
+import it.unipi.dii.iot.model.Band;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -15,33 +15,33 @@ public class MySQLManager {
         this.connection = connection;
     }
 
-    public void insertVehicle (Vehicle vehicle) {
+    public void insertBand (Band band) {
         try (
-                PreparedStatement statement = connection.prepareStatement("INSERT INTO vehicles (id, type, base_station, locked) VALUES (?, ?, ?, ?)")
+                PreparedStatement statement = connection.prepareStatement("INSERT INTO band (id, active, battery, alter_on) VALUES (?, ?, ?, ?)")
         ){
-            statement.setString(1, vehicle.getId());
-            statement.setString(2, vehicle.getType());
-            statement.setString(3, vehicle.getBaseStation());
-            statement.setBoolean(4, vehicle.getLocked());
+            statement.setString(1, band.getId());
+            statement.setBoolean(2, band.getActive());
+            statement.setInt(3, band.getBattery());
+            statement.setBoolean(4, band.getAlertOn());
             statement.executeUpdate();
 
         }
         catch (final SQLIntegrityConstraintViolationException e) {
-            System.out.printf("INFO: vehicle %s already registered in the database.%n", vehicle.getId());
+            System.out.printf("INFO: band %s already registered in the database.%n", band.getId());
         }
         catch (final SQLException e) {
             e.printStackTrace();
         }
     }
 
-    public int updateVehicle (Vehicle vehicle) {
+    public int updateBand (Band band) {
         System.out.println("UPDATE");
         try (
-                PreparedStatement statement = connection.prepareStatement("UPDATE vehicles SET locked = ? WHERE id = ?")
+                PreparedStatement statement = connection.prepareStatement("UPDATE band SET active = ? WHERE id = ?")
         ){
-            statement.setBoolean(1, vehicle.getLocked());
-            statement.setString(2, vehicle.getId());
-            if (statement.executeUpdate() != 1) throw new Exception("ERROR: not valid id " + vehicle.getId());
+            statement.setBoolean(1, band.getActive());
+            statement.setString(2, band.getId());
+            if (statement.executeUpdate() != 1) throw new Exception("ERROR: not valid id " + band.getId());
         }
         catch (final SQLException e) {
             e.printStackTrace();

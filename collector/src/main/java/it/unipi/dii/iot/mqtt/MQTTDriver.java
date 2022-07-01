@@ -1,7 +1,7 @@
 package it.unipi.dii.iot.mqtt;
 
 import it.unipi.dii.iot.config.ConfigParameters;
-import it.unipi.dii.iot.model.Vehicle;
+import it.unipi.dii.iot.model.Band;
 import it.unipi.dii.iot.persistence.MySQLDriver;
 import it.unipi.dii.iot.persistence.MySQLManager;
 import org.eclipse.paho.client.mqttv3.*;
@@ -29,8 +29,8 @@ public class MQTTDriver implements MqttCallback {
             mqttClient = new MqttClient(broker, clientId);
             mqttClient.connect();
             mqttClient.setCallback(this);
-            mqttClient.subscribe("bike/#");
-            System.out.println("Subscribe correctly.");
+            mqttClient.subscribe("band/#");
+            System.out.println("Subscribed correctly.");
         } catch (MqttException me) {
             me.printStackTrace();
         } catch (SQLException e) {
@@ -38,9 +38,9 @@ public class MQTTDriver implements MqttCallback {
         }
     }
 
-    public void publish(String id, String topic, String message) {
+    public void publish(String id, String topic, String action, String message) {
         try {
-            mqttClient.publish(topic + "/" + id, new MqttMessage(message.getBytes()));
+            mqttClient.publish(topic + "/" + id + "/" + action, new MqttMessage(message.getBytes()));
         } catch (MqttException me) {
             me.printStackTrace();
         }
@@ -69,7 +69,6 @@ public class MQTTDriver implements MqttCallback {
         System.out.printf("[%s] %s%n", topic, new String(mqttMessage.getPayload()));
         
         String[] tokens = topic.split("/");
-        String type = tokens[0];
         String id = tokens[1];
         String action = tokens[2];
         
@@ -77,10 +76,10 @@ public class MQTTDriver implements MqttCallback {
 
         switch(action) {
             case "status": {
-                Boolean locked = fields[0].equals("lock");
-                Vehicle vehicle = new Vehicle(id, type, clientId, locked);
-                if (mySQLManager.updateVehicle(vehicle) == 1) {
-                    mySQLManager.insertVehicle(vehicle);
+                Boolean active = fields[0].equals("active");
+                Band band = new Band(id, active, 100, false);
+                if (mySQLManager.updateBand(band) == 1) {
+                    mySQLManager.insertBand(band);
                 }
                 break;
             }

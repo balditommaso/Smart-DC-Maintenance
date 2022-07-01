@@ -4,7 +4,6 @@ package it.unipi.dii.iot.persistence;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import it.unipi.dii.iot.config.ConfigParameters;
-import it.unipi.dii.iot.model.Vehicle;
 
 import javax.sql.DataSource;
 import javax.xml.crypto.Data;
