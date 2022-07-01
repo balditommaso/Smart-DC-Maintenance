@@ -1,6 +1,7 @@
 package it.unipi.dii.iot.persistence;
 
-import it.unipi.dii.iot.model.Band;
+import it.unipi.dii.iot.model.BandDevice;
+import it.unipi.dii.iot.model.BandHeartbeat;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -15,33 +16,32 @@ public class MySQLManager {
         this.connection = connection;
     }
 
-    public void insertBand (Band band) {
+    public void insertBand (BandDevice bandDevice) {
         try (
-                PreparedStatement statement = connection.prepareStatement("INSERT INTO band (id, active, battery, alter_on) VALUES (?, ?, ?, ?)")
+                PreparedStatement statement = connection.prepareStatement("INSERT INTO band_device (idband, active, alert_on) VALUES (?, ?, ?)")
         ){
-            statement.setString(1, band.getId());
-            statement.setBoolean(2, band.getActive());
-            statement.setInt(3, band.getBattery());
-            statement.setBoolean(4, band.getAlertOn());
+            statement.setString(1, bandDevice.getId());
+            statement.setBoolean(2, bandDevice.getActive());
+            statement.setBoolean(3, bandDevice.getAlertOn());
             statement.executeUpdate();
 
         }
         catch (final SQLIntegrityConstraintViolationException e) {
-            System.out.printf("INFO: band %s already registered in the database.%n", band.getId());
+            System.out.printf("INFO: band device %s already registered in the database.%n", bandDevice.getId());
         }
         catch (final SQLException e) {
             e.printStackTrace();
         }
     }
 
-    public int updateBand (Band band) {
+    public int updateBand (BandDevice bandDevice) {
         System.out.println("UPDATE");
         try (
-                PreparedStatement statement = connection.prepareStatement("UPDATE band SET active = ? WHERE id = ?")
+                PreparedStatement statement = connection.prepareStatement("UPDATE band SET active = ? WHERE idband = ?")
         ){
-            statement.setBoolean(1, band.getActive());
-            statement.setString(2, band.getId());
-            if (statement.executeUpdate() != 1) throw new Exception("ERROR: not valid id " + band.getId());
+            statement.setBoolean(1, bandDevice.getActive());
+            statement.setString(2, bandDevice.getId());
+            if (statement.executeUpdate() != 1) throw new Exception("ERROR: not valid id " + bandDevice.getId());
         }
         catch (final SQLException e) {
             e.printStackTrace();
@@ -51,5 +51,20 @@ public class MySQLManager {
             return 1;
         }
         return 0;
+    }
+    
+    public void insertBandHeartbeat (BandHeartbeat bandHeartbeat) {
+        try (
+                PreparedStatement statement = connection.prepareStatement("INSERT INTO band_heartbeat (idband, heart_frequency, battery_level) VALUES (?, ?, ?)")
+        ){
+            statement.setString(1, bandHeartbeat.getDeviceId());
+            statement.setInt(2, bandHeartbeat.getHeartFrequency());
+            statement.setInt(3, bandHeartbeat.getBatteryLevel());
+            statement.executeUpdate();
+
+        }
+        catch (final SQLException e) {
+            e.printStackTrace();
+        }
     }
 }

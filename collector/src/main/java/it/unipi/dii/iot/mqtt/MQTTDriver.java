@@ -1,10 +1,13 @@
 package it.unipi.dii.iot.mqtt;
 
 import it.unipi.dii.iot.config.ConfigParameters;
-import it.unipi.dii.iot.model.Band;
+import it.unipi.dii.iot.model.BandDevice;
+import it.unipi.dii.iot.model.BandHeartbeat;
 import it.unipi.dii.iot.persistence.MySQLDriver;
 import it.unipi.dii.iot.persistence.MySQLManager;
 import org.eclipse.paho.client.mqttv3.*;
+
+import com.google.gson.Gson;
 
 import java.sql.SQLException;
 
@@ -72,16 +75,20 @@ public class MQTTDriver implements MqttCallback {
         String id = tokens[1];
         String action = tokens[2];
         
-        String[] fields = new String(mqttMessage.getPayload()).split("$");
+        Gson parser = new Gson();
+        String payload = new String(mqttMessage.getPayload());        
 
         switch(action) {
             case "status": {
-                Boolean active = fields[0].equals("active");
-                Band band = new Band(id, active, 100, false);
-                if (mySQLManager.updateBand(band) == 1) {
-                    mySQLManager.insertBand(band);
+                BandDevice bandDevice = parser.fromJson(payload, BandDevice.class);
+                if (mySQLManager.updateBand(bandDevice) == 1) {
+                    mySQLManager.insertBand(bandDevice);
                 }
                 break;
+            }
+            case "heartbeat": {
+            	BandHeartbeat bandHeartbeat = parser.fromJson(payload, BandHeartbeat.class);
+            	mySQLManager.insertBandHeartbeat(bandHeartbeat);
             }
         }
     }

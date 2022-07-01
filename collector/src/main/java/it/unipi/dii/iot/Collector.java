@@ -1,6 +1,6 @@
 package it.unipi.dii.iot;
 
-import it.unipi.dii.iot.model.Band;
+import it.unipi.dii.iot.model.BandDevice;
 import it.unipi.dii.iot.mqtt.MQTTDriver;
 import it.unipi.dii.iot.persistence.MySQLDriver;
 
