@@ -24,15 +24,13 @@
 #endif
 
 /*---------------------------------------------------------------------------*/
-static const char *broker_ip = MQTT_CLIENT_BROKER_IP_ADDR;
-
-/*---------------------------------------------------------------------------*/
 PROCESS_NAME(mqtt_client_process);
 AUTOSTART_PROCESSES(&mqtt_client_process);
 
 struct mqtt_band {
   char band_id[MQTT_BAND_ID_LENGTH];
-  struct alarm_system alarm;
+  //struct alarm_system alarm;
+	bool alarm;
 
   /* Internal state. */
   clock_time_t state_check_interval;
@@ -49,37 +47,32 @@ struct mqtt_band {
   
   /* Buffers used to store the topics regarding commands. */
   struct cmd_topics {
-    char user_registration[MQTT_BAND_TOPIC_MAX_LENGTH];
+    char patient_registration[MQTT_BAND_TOPIC_MAX_LENGTH];
     char band_registration[MQTT_BAND_TOPIC_MAX_LENGTH];
+    char status[MQTT_BAND_TOPIC_MAX_LENGTH];
     char alarm_state[MQTT_BAND_TOPIC_MAX_LENGTH];
   } cmd_topics;
 
   /* Buffers used to store the topics regarding telemetry data. */
   struct telemetry_topics {
-    char oxygen_saturation[MQTT_BAND_TOPIC_MAX_LENGTH];
-    char blood_pressure[MQTT_BAND_TOPIC_MAX_LENGTH];
-    char temperature[MQTT_BAND_TOPIC_MAX_LENGTH];
-    char respiration[MQTT_BAND_TOPIC_MAX_LENGTH];
+    char vital_signs[MQTT_BAND_TOPIC_MAX_LENGTH];
     char alarm_state[MQTT_BAND_TOPIC_MAX_LENGTH];
-    char heart_rate[MQTT_BAND_TOPIC_MAX_LENGTH];
   } telemetry_topics;
   
   /* Buffers used to store the output messages. */
   struct output_buffers {
+    char status[MQTT_BAND_OUTPUT_BUFFER_SIZE];
     char patient_registration[MQTT_BAND_OUTPUT_BUFFER_SIZE];
-    char monitor_registration[MQTT_BAND_OUTPUT_BUFFER_SIZE];
-    char oxygen_saturation[MQTT_BAND_OUTPUT_BUFFER_SIZE];
-    char blood_pressure[MQTT_BAND_OUTPUT_BUFFER_SIZE];
-    char temperature[MQTT_BAND_OUTPUT_BUFFER_SIZE];
-    char respiration[MQTT_BAND_OUTPUT_BUFFER_SIZE];
+    char band_registration[MQTT_BAND_OUTPUT_BUFFER_SIZE];
+    char vital_signs[MQTT_BAND_OUTPUT_BUFFER_SIZE];
     char alarm_state[MQTT_BAND_OUTPUT_BUFFER_SIZE];
-    char heart_rate[MQTT_BAND_OUTPUT_BUFFER_SIZE];
   } output_buffers; 
 };
 
 static struct mqtt_band band;
   
 
+/*
 // Periodic timer to check the state of the MQTT client
 #define STATE_MACHINE_PERIODIC     (CLOCK_SECOND >> 1)
 static struct ctimer blinking_timer;
@@ -87,9 +80,53 @@ static struct ctimer blinking_timer;
 #define ALERT_BLINK     3
 #define BLINK_PERIOD    2
 // static bool alert_on = false;
-static bool active = false;
 static int blinking_count = 0;
 // static int battery_lvl = 100;
+*/
+
+/*---------------------------------------------------------------------------*/
+// JSON
+static void clear_buffer(char *buffer, size_t size)
+{
+  memset(buffer, 0, size);
+}
+
+void set_json_msg_band_registration(char *message_buffer, size_t size, char *band_id)
+{
+  clear_buffer(message_buffer, size);
+  snprintf(message_buffer, 
+  				 size, 
+  				 "{\"bandID\": \"%s\", \"registration\": true}",
+  				 band_id);
+}
+
+void set_json_msg_status(char *message_buffer, size_t size, bool active)
+{
+  clear_buffer(message_buffer, size);
+  snprintf(message_buffer,
+  				 size, 
+  				 "{\"status\": %d}", 
+  				 active);
+}
+
+void set_json_msg_vital_signs(char *message_buffer, size_t size, int oxygen_saturation, int blood_pressure, int temperature, int respiration, int heart_rate) 
+{
+  clear_buffer(message_buffer, size);
+  snprintf(message_buffer,
+  				 size, 
+  				 "{\"oxygen_saturation\": %d, \"blood_pressure\": \"%d\", \"temperature\": %d, \"respiration\": %d, \"heart_rate\": \"%d\"}",
+  				 oxygen_saturation,
+  				 blood_pressure,
+  				 temperature,
+  				 respiration,
+  				 heart_rate);
+}
+
+void set_json_msg_alarm_started(char *message_buffer, size_t size)
+{
+  clear_buffer(message_buffer, size);
+  snprintf(message_buffer, size, "%s", "{\"alarm\": true}");
+}
 
 /*---------------------------------------------------------------------------*/
 
@@ -102,6 +139,8 @@ static bool have_connectivity(void)
     return true;
 }
 
+
+/*
 // utility function
 static void blinking(void *ptr)
 {
@@ -116,32 +155,25 @@ static void blinking(void *ptr)
         blinking_count = 0;
     }
 }
-
+*/
 
 static void init_topics(void)
 {
   /* Command topics. */
-  snprintf(band.cmd_topics.alarm_state, MQTT_MONITOR_TOPIC_MAX_LENGTH, MQTT_MONITOR_CMD_TOPIC_ALARM_STATE, monitor.monitor_id);
-  snprintf(band.cmd_topics.monitor_registration, MQTT_MONITOR_TOPIC_MAX_LENGTH, "%s", MQTT_MONITOR_CMD_TOPIC_MONITOR_REGISTRATION);
-  snprintf(band.cmd_topics.patient_registration, MQTT_MONITOR_TOPIC_MAX_LENGTH, "%s",MQTT_MONITOR_CMD_TOPIC_PATIENT_REGISTRATION);
+  snprintf(band.cmd_topics.alarm_state, MQTT_BAND_TOPIC_MAX_LENGTH, MQTT_BAND_CMD_TOPIC_ALARM_STATE, band.band_id);
+  snprintf(band.cmd_topics.band_registration, MQTT_BAND_TOPIC_MAX_LENGTH, "%s", MQTT_BAND_CMD_TOPIC_BAND_REGISTRATION);
+  snprintf(band.cmd_topics.status, MQTT_BAND_TOPIC_MAX_LENGTH, "%s", MQTT_BAND_CMD_TOPIC_BAND_REGISTRATION);
+  snprintf(band.cmd_topics.patient_registration, MQTT_BAND_TOPIC_MAX_LENGTH, "%s",MQTT_BAND_CMD_TOPIC_PATIENT_REGISTRATION);
 
 	/* Telemetry topics. */
-  snprintf(monitor.telemetry_topics.heart_rate, MQTT_MONITOR_TOPIC_MAX_LENGTH, MQTT_MONITOR_TELEMETRY_TOPIC_HEART_RATE, monitor.monitor_id);
-  snprintf(monitor.telemetry_topics.blood_pressure, MQTT_MONITOR_TOPIC_MAX_LENGTH, MQTT_MONITOR_TELEMETRY_TOPIC_BLOOD_PRESSURE, monitor.monitor_id);
-  snprintf(monitor.telemetry_topics.temperature, MQTT_MONITOR_TOPIC_MAX_LENGTH, MQTT_MONITOR_TELEMETRY_TOPIC_TEMPERATURE, monitor.monitor_id);
-	snprintf(monitor.telemetry_topics.respiration, MQTT_MONITOR_TOPIC_MAX_LENGTH, MQTT_MONITOR_TELEMETRY_TOPIC_RESPIRATION, monitor.monitor_id);
-  snprintf(monitor.telemetry_topics.oxygen_saturation, MQTT_MONITOR_TOPIC_MAX_LENGTH, MQTT_MONITOR_TELEMETRY_TOPIC_OXYGEN_SATURATION, monitor.monitor_id);
-  snprintf(monitor.telemetry_topics.alarm_state, MQTT_MONITOR_TOPIC_MAX_LENGTH, MQTT_MONITOR_TELEMETRY_TOPIC_ALARM_STATE, monitor.monitor_id);
+  snprintf(band.telemetry_topics.vital_signs, MQTT_BAND_TOPIC_MAX_LENGTH, MQTT_BAND_TELEMETRY_TOPIC_VITAL_SIGNS, band.band_id);
+  snprintf(band.telemetry_topics.alarm_state, MQTT_BAND_TOPIC_MAX_LENGTH, MQTT_BAND_TELEMETRY_TOPIC_ALARM_STATE, band.band_id);
 
-	LOG_DBG("Command alarm state topic: %s\n", monitor.cmd_topics.alarm_state);
-  LOG_DBG("Command monitor registration topic: %s\n", monitor.cmd_topics.monitor_registration);
-  LOG_DBG("Command patient registration topic: %s\n", monitor.cmd_topics.patient_registration);
-  LOG_DBG("Telemetry heart rate topic: %s\n", monitor.telemetry_topics.heart_rate);
-  LOG_DBG("Telemetry blood pressure topic: %s\n", monitor.telemetry_topics.blood_pressure);
-  LOG_DBG("Telemetry temperature topic: %s\n", monitor.telemetry_topics.temperature);
-  LOG_DBG("Telemetry respiration topic: %s\n", monitor.telemetry_topics.respiration);
-  LOG_DBG("Telemetry oxygen saturation topic: %s\n", monitor.telemetry_topics.oxygen_saturation);
-  LOG_DBG("Telemetry alarm state topic: %s\n", monitor.telemetry_topics.alarm_state);
+	LOG_DBG("Command alarm state topic: %s\n", band.cmd_topics.alarm_state);
+  LOG_DBG("Command monitor registration topic: %s\n", band.cmd_topics.band_registration);
+  LOG_DBG("Command patient registration topic: %s\n", band.cmd_topics.patient_registration);
+  LOG_DBG("Telemetry vital signs topic: %s\n", band.telemetry_topics.vital_signs);
+  LOG_DBG("Telemetry alarm state topic: %s\n", band.telemetry_topics.alarm_state);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -151,14 +183,14 @@ PROCESS(mqtt_client_process, "MQTT Client");
 static void publish(char *topic, char* output_buffer)
 {
   LOG_INFO("Publishing %s in the topic %s.\n", output_buffer, topic);
-  monitor.mqtt_module.status = mqtt_publish(&band.mqtt_module.connection,
+  band.mqtt_module.status = mqtt_publish(&band.mqtt_module.connection,
                                             NULL,
                                             topic,
                                             (uint8_t *)output_buffer,
                                             strlen(output_buffer),
                                             MQTT_QOS_LEVEL_0,
                                             MQTT_RETAIN_OFF);
-  switch(monitor.mqtt_module.status) {
+  switch(band.mqtt_module.status) {
   case MQTT_STATUS_OK:
   	return;
   case MQTT_STATUS_NOT_CONNECTED_ERROR: {
@@ -184,13 +216,13 @@ static void pub_handler(const char *topic, uint16_t topic_len, const uint8_t *ch
 		  return;
 		}
 		
-    char start_alamr_msg[MQTT_BAND_INPUT_BUFFER_SIZE];
-    json_message_alarm_started(start_alarm_msg, MQTT_MONITOR_INPUT_BUFFER_SIZE);
+    char start_alarm_msg[MQTT_BAND_INPUT_BUFFER_SIZE];
+    set_json_msg_alarm_started(start_alarm_msg, MQTT_BAND_INPUT_BUFFER_SIZE);
     
-  	if(strcmp(start_alarm_msg, (char*)msg->payload_chunk) == 0) {
+  	if(strcmp(start_alarm_msg, (char*)chunk) == 0) {
     	LOG_INFO("Starting the alarm.\n");
-    	alarm_start(&monitor.alarm); /* There is no need to notify the collector about the state change. */
-    	ctimer_set(&blinking_timer, CLOCK_SECOND * BLINK_PERIOD, blinking, NULL);
+    //	alarm_start(&band.alarm); /* There is no need to notify the collector about the state change. */
+    //	ctimer_set(&blinking_timer, CLOCK_SECOND * BLINK_PERIOD, blinking, NULL);
     	return;
   	}
 
@@ -204,20 +236,20 @@ static void mqtt_event(struct mqtt_connection *m, mqtt_event_t event, void *data
     {
         case MQTT_EVENT_CONNECTED: 
         {
-            printf("Application has a MQTT connection\n");
+            LOG_INFO("Application has a MQTT connection\n");
             band.state = MQTT_BAND_STATE_CONNECTED;
             break;
         }
         case MQTT_EVENT_DISCONNECTED: 
         {
-            printf("MQTT Disconnect. Reason %u\n", *((mqtt_event_t *)data));
+            LOG_INFO("MQTT Disconnect. Reason %u\n", *((mqtt_event_t *)data));
             band.state = MQTT_BAND_STATE_DISCONNECTED;
             process_poll(&mqtt_client_process);
             break;
         }
         case MQTT_EVENT_PUBLISH: 
         {
-            msg_ptr = data;
+            struct mqtt_message* msg_ptr = data;
             pub_handler(msg_ptr->topic, strlen(msg_ptr->topic),
                         msg_ptr->payload_chunk, msg_ptr->payload_length);
             break;
@@ -265,7 +297,7 @@ static void handle_state_init(void)
     LOG_INFO_(". Link local address: ");
     LOG_INFO_6ADDR(&(uip_ds6_get_link_local(ADDR_PREFERRED)->ipaddr));
     LOG_INFO_("\n");
-    monitor.state = MQTT_BAND_STATE_NETWORK_OK;
+    band.state = MQTT_BAND_STATE_NETWORK_OK;
   } else {
     LOG_INFO("Connecting to the network.\n");
   }
@@ -280,19 +312,19 @@ static bool handle_state_network_ok(void)
                         
   
   /* Initialize MQTT engine. */
-  mqtt_register(&bands.mqtt_module.connection,
+  mqtt_register(&band.mqtt_module.connection,
                 &mqtt_client_process,
                 band.band_id,
-                handle_mqtt_event,
+                mqtt_event,
                 MQTT_BAND_MAX_TCP_SEGMENT_SIZE);
   LOG_INFO("MQTT engine initialized. Band id: %s.\n", band.band_id);
   
    /* Connect to the broker. */
-  LOG_INFO("Connecting to the MQTT broker at %s, %d.\n", MQTT_BAND_BROKER_IP_ADDRESS, MQTT_BAND_BROKER_PORT);
-  monitor.mqtt_module.status = mqtt_connect(&monitor.mqtt_module.connection,
-                                            MQTT_BAND_BROKER_IP_ADDRESS,
-                                            MQTT_BAND_BROKER_PORT,
-                                            MQTT_BAND_BROKER_KEEP_ALIVE,
+  LOG_INFO("Connecting to the MQTT broker at %s, %d.\n", MQTT_BROKER_IP_ADDRESS, MQTT_BROKER_PORT);
+  band.mqtt_module.status = mqtt_connect(&band.mqtt_module.connection,
+                                            MQTT_BROKER_IP_ADDRESS,
+                                            MQTT_BROKER_PORT,
+                                            MQTT_BROKER_KEEP_ALIVE,
                                             MQTT_CLEAN_SESSION_ON);
 
   if(band.mqtt_module.status == MQTT_STATUS_ERROR) {
@@ -332,21 +364,22 @@ static bool handle_state_connected(void)
 static void handle_state_subscribed(void)
 {
 /* Register the monitor sending a message to the collector. */
-  json_message_monitor_registration(band.output_buffers.band_registration,
+  set_json_msg_band_registration(band.output_buffers.band_registration,
                                     MQTT_BAND_OUTPUT_BUFFER_SIZE,
                                     band.band_id);
   publish(band.cmd_topics.band_registration, band.output_buffers.band_registration);
 
   /* Start the sensor processes (without starting the sampling activity). */
-  sensors_cmd_start_processes();
+  //sensors_cmd_start_processes();
   
 	/* Initialize the alarm system. */
-  alarm_init(&monitor.alarm);
+  //alarm_init(&monitor.alarm);
 
   /*
    * From this point on, monitor.state_check_timer is used only to check
    * for eventual disconnections (state MQTT_MONITOR_STATE_DISCONNECTED).
    */
+  /*
   band.state = MQTT_BAND_STATE_WAITING_PATIENT_ID;
   LOG_INFO("Waiting for a new patient ID on the serial line.\n");
 
@@ -356,51 +389,76 @@ static void handle_state_subscribed(void)
   snprintf(random_patient_ID, MQTT_MONITOR_PATIENT_ID_LENGTH, "auto_%d", rand());
   handle_new_patient_ID(random_patient_ID);
 #endif
+*/
+
+	band.state = MQTT_BAND_STATE_INACTIVE;
 }
 
 
 static void handle_button_press(button_hal_button_t *button)
 {
 	LOG_INFO("Button press event: %d s.\n", button->press_duration_seconds);
-	
-/*
 
-                sprintf(pub_topic, "band/%s/", client_id);
-                
-                // active
-                if (ev == button_hal_press_event) 
-                {
-                    strcat(pub_topic, "status");
-                    if (!active) 
-                    {
-                        leds_off(LEDS_ALL);
-                        leds_set(LEDS_NUM_TO_MASK(LEDS_GREEN));
-                        sprintf(app_buffer, "%s", "active");
-                    } 
-                    else 
-                    {
-                        leds_off(LEDS_ALL);
-                        leds_set(LEDS_NUM_TO_MASK(LEDS_RED));
-                        sprintf(app_buffer, "%s", "disactive");
-                    }
+  if (band.state == MQTT_BAND_STATE_INACTIVE) {															// && button->press_duration_seconds == MQTT_BAND_PRESS_DURATION 
+  		LOG_INFO("Band %s activated.\n", band.band_id);
+  		
+      leds_off(LEDS_ALL);
+      leds_set(LEDS_NUM_TO_MASK(LEDS_GREEN));
+      
+      set_json_msg_status(band.output_buffers.status, MQTT_BAND_OUTPUT_BUFFER_SIZE, true);
+      publish(band.cmd_topics.status, band.output_buffers.status);
+      
+      band.state = MQTT_BAND_STATE_ACTIVE;
+  }
+  
+  else if (band.state  == MQTT_BAND_STATE_ACTIVE) {						// && button->press_duration_seconds == MQTT_BAND_PRESS_DURATION 
+  		LOG_INFO("Band %s disactivated.\n", band.band_id);
+  		  		
+      leds_off(LEDS_ALL);
+      leds_set(LEDS_NUM_TO_MASK(LEDS_RED));
+      
+      set_json_msg_status(band.output_buffers.status, MQTT_BAND_OUTPUT_BUFFER_SIZE, false);
+      publish(band.cmd_topics.status, band.output_buffers.status);
+      
+      band.state = MQTT_BAND_STATE_INACTIVE;
+  }
+}
 
-                    active = !active;
-                    LOG_INFO("Status: %s\n", app_buffer);
-                    mqtt_publish(&conn, NULL, pub_topic, (uint8_t *)app_buffer,
-                        strlen(app_buffer), MQTT_QOS_LEVEL_0, MQTT_RETAIN_OFF);
-                }
-                // battery
+static void generate_sensors_sample()
+{
+  
+ 	//min_threshold = ALARM_HEART_RATE_MIN_THRESHOLD;
+ 	//max_threshold = ALARM_HEART_RATE_MAX_THRESHOLD;
+ 	
+ 	int oxygen_saturation = 10;
+ 	int blood_pressure = 10;
+  int	temperature = 101;
+  int respiration = 0;
+ 	int heart_rate = 1;
+ 	
+ 	set_json_msg_vital_signs(band.output_buffers.vital_signs, MQTT_BAND_OUTPUT_BUFFER_SIZE, 
+ 															oxygen_saturation, 
+ 															blood_pressure, 
+ 															temperature,
+ 															respiration,
+ 															heart_rate);
+ 	
+ 	publish(band.telemetry_topics.vital_signs, band.output_buffers.vital_signs);
 
-                // heart-rate
-                
+  
+  // Check if alarm
+  /*  if(alarming_sample(min_threshold, max_threshold, sample)) {
+    bool alarm_state_changed;
 
-
-*/
+    LOG_INFO("Alarming %s sample detected: %d. Min threshold: %d, max threshold: %d\n",
+             sensor, sample, min_threshold, max_threshold);
+    LOG_INFO("Starting the alarm.\n");
+    }  */
 }
 
 static void init_band() 
 {
-	band.state = MQTT_BAND_STATE_STARTED;
+	band.state = MQTT_BAND_STATE_INIT;
 	
 	/* Initialize the periodic timer to check the internal state. */
   band.state_check_interval = MQTT_BAND_STATE_CHECK_INTERVAL*CLOCK_SECOND;
@@ -445,8 +503,12 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
             if (band.state == MQTT_BAND_STATE_SUBSCRIBED) {
             	handle_state_subscribed();
             }
+            					
+						if (band.state == MQTT_BAND_STATE_ACTIVE) {
+							generate_sensors_sample();
+						}
 
-						if(band.state == MQTT_BAND_STATE_DISCONNECTED) {
+						if (band.state == MQTT_BAND_STATE_DISCONNECTED) {
 							LOG_ERR("Disconnected form MQTT broker\n");	
 						  break;
 						}
@@ -455,12 +517,12 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
 						continue;
 					}
 					
-				if(ev == button_hal_periodic_event && band.state == MQTT_BAND_STATE_OPERATIONAL) {
+				if(ev == button_hal_press_event &&	//  button_hal_periodic_event
+					(MQTT_BAND_STATE_ACTIVE || MQTT_BAND_STATE_INACTIVE)) {
 				  handle_button_press((button_hal_button_t *)data);
 				  continue;
     		}
-    	}
-  	}
+    }
   	
   	finish_band();
   	LOG_INFO("Stopping the process.\n");

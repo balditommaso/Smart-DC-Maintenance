@@ -14,6 +14,7 @@
 #define MQTT_BAND_INPUT_BUFFER_SIZE                      32  /* Size of the MQTT input buffer. */
 #define MQTT_BAND_OUTPUT_BUFFER_SIZE                     256 /* Size of the MQTT output buffer. */
 #define MQTT_BAND_TOPIC_MAX_LENGTH                    	 128 /* Maximum length of a topic label. */
+#define MQTT_BAND_PRESS_DURATION						 1 /* Time in seconds for which the button must be kept pressed. */
 
 /* MQTT band internal states. */
 #define MQTT_BAND_STATE_INIT                       		 0 /* Initial state. */
@@ -27,15 +28,12 @@
 #define MQTT_BAND_STATE_INACTIVE                         8 /* Band weared. */
 
 /* MQTT command and telemetry topics. */
-#define MQTT_MONITOR_CMD_TOPIC_ALARM_STATE               "cmd/smartICU/%s/patient-state/alarm-state"
-#define MQTT_MONITOR_CMD_TOPIC_MONITOR_REGISTRATION      "cmd/smartICU/collector/monitor-registration"
-#define MQTT_MONITOR_CMD_TOPIC_PATIENT_REGISTRATION      "cmd/smartICU/collector/patient-registration"
-#define MQTT_MONITOR_TELEMETRY_TOPIC_HEART_RATE          "telemetry/smartICU/%s/patient-state/heart-rate"
-#define MQTT_MONITOR_TELEMETRY_TOPIC_BLOOD_PRESSURE      "telemetry/smartICU/%s/patient-state/blood-pressure"
-#define MQTT_MONITOR_TELEMETRY_TOPIC_TEMPERATURE         "telemetry/smartICU/%s/patient-state/temperature"
-#define MQTT_MONITOR_TELEMETRY_TOPIC_RESPIRATION         "telemetry/smartICU/%s/patient-state/respiration"
-#define MQTT_MONITOR_TELEMETRY_TOPIC_OXYGEN_SATURATION   "telemetry/smartICU/%s/patient-state/oxygen-saturation"
-#define MQTT_MONITOR_TELEMETRY_TOPIC_ALARM_STATE         "telemetry/smartICU/%s/patient-state/alarm-state"
+#define MQTT_BAND_CMD_TOPIC_ALARM_STATE               "cmd/SDCM/%s/patient-state/alarm-state"
+#define MQTT_BAND_CMD_TOPIC_BAND_REGISTRATION      	  "cmd/SDCM/collector/monitor-registration"
+#define MQTT_BAND_CMD_TOPIC_PATIENT_REGISTRATION      "cmd/SDCM/collector/patient-registration"
+#define MQTT_BAND_CMD_TOPIC_STATUS			          "cmd/SDCM/%s/patient-state/status"
+#define MQTT_BAND_TELEMETRY_TOPIC_VITAL_SIGNS          "telemetry/SDCM/%s/patient-state/vital-signs"
+#define MQTT_BAND_TELEMETRY_TOPIC_ALARM_STATE         "telemetry/SDCM/%s/patient-state/alarm-state"
 
 #endif /* SMART_ICU_MQTT_MONITOR_CONSTANTS_H */
 /** @} */
