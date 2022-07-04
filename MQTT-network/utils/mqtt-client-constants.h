@@ -14,7 +14,6 @@
 #define MQTT_BAND_INPUT_BUFFER_SIZE                      32  /* Size of the MQTT input buffer. */
 #define MQTT_BAND_OUTPUT_BUFFER_SIZE                     256 /* Size of the MQTT output buffer. */
 #define MQTT_BAND_TOPIC_MAX_LENGTH                    	 128 /* Maximum length of a topic label. */
-#define MQTT_BAND_PRESS_DURATION						 1 /* Time in seconds for which the button must be kept pressed. */
 
 /* MQTT band internal states. */
 #define MQTT_BAND_STATE_INIT                       		 0 /* Initial state. */

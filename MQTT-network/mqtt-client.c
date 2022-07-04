@@ -11,10 +11,13 @@
 #include "dev/leds.h"
 #include "os/sys/log.h"
 #include "mqtt-client.h"
+#include "./vital-signs/vital-signs.h"
+#include "./utils/json-message.h"
 #include "./utils/mqtt-client-constants.h"
 
 #include <string.h>
 #include <strings.h>
+
 /*---------------------------------------------------------------------------*/
 #define LOG_MODULE "mqtt-client"
 #ifdef MQTT_CLIENT_CONF_LOG_LEVEL
@@ -26,6 +29,7 @@
 /*---------------------------------------------------------------------------*/
 PROCESS_NAME(mqtt_client_process);
 AUTOSTART_PROCESSES(&mqtt_client_process);
+PROCESS(mqtt_client_process, "MQTT Client");
 
 struct mqtt_band {
   char band_id[MQTT_BAND_ID_LENGTH];
@@ -83,63 +87,6 @@ static struct ctimer blinking_timer;
 static int blinking_count = 0;
 // static int battery_lvl = 100;
 */
-
-/*---------------------------------------------------------------------------*/
-// JSON
-static void clear_buffer(char *buffer, size_t size)
-{
-  memset(buffer, 0, size);
-}
-
-void set_json_msg_band_registration(char *message_buffer, size_t size, char *band_id)
-{
-  clear_buffer(message_buffer, size);
-  snprintf(message_buffer, 
-  				 size, 
-  				 "{\"bandID\": \"%s\", \"registration\": true}",
-  				 band_id);
-}
-
-void set_json_msg_status(char *message_buffer, size_t size, bool active)
-{
-  clear_buffer(message_buffer, size);
-  snprintf(message_buffer,
-  				 size, 
-  				 "{\"status\": %d}", 
-  				 active);
-}
-
-void set_json_msg_vital_signs(char *message_buffer, size_t size, int oxygen_saturation, int blood_pressure, int temperature, int respiration, int heart_rate) 
-{
-  clear_buffer(message_buffer, size);
-  snprintf(message_buffer,
-  				 size, 
-  				 "{\"oxygen_saturation\": %d, \"blood_pressure\": \"%d\", \"temperature\": %d, \"respiration\": %d, \"heart_rate\": \"%d\"}",
-  				 oxygen_saturation,
-  				 blood_pressure,
-  				 temperature,
-  				 respiration,
-  				 heart_rate);
-}
-
-void set_json_msg_alarm_started(char *message_buffer, size_t size)
-{
-  clear_buffer(message_buffer, size);
-  snprintf(message_buffer, size, "%s", "{\"alarm\": true}");
-}
-
-/*---------------------------------------------------------------------------*/
-
-static bool have_connectivity(void)
-{
-    if (uip_ds6_get_global(ADDR_PREFERRED) == NULL || uip_ds6_defrt_choose() == NULL) 
-    {
-        return false;
-    }
-    return true;
-}
-
-
 /*
 // utility function
 static void blinking(void *ptr)
@@ -156,6 +103,16 @@ static void blinking(void *ptr)
     }
 }
 */
+/*---------------------------------------------------------------------------*/
+
+static bool have_connectivity(void)
+{
+    if (uip_ds6_get_global(ADDR_PREFERRED) == NULL || uip_ds6_defrt_choose() == NULL) 
+    {
+        return false;
+    }
+    return true;
+}
 
 static void init_topics(void)
 {
@@ -175,9 +132,6 @@ static void init_topics(void)
   LOG_DBG("Telemetry vital signs topic: %s\n", band.telemetry_topics.vital_signs);
   LOG_DBG("Telemetry alarm state topic: %s\n", band.telemetry_topics.alarm_state);
 }
-
-/*---------------------------------------------------------------------------*/
-PROCESS(mqtt_client_process, "MQTT Client");
 
 /*---------------------------------------------------------------------------*/
 static void publish(char *topic, char* output_buffer)
@@ -424,17 +378,13 @@ static void handle_button_press(button_hal_button_t *button)
   }
 }
 
-static void generate_sensors_sample()
+static void handle_state_active()
 {
-  
- 	//min_threshold = ALARM_HEART_RATE_MIN_THRESHOLD;
- 	//max_threshold = ALARM_HEART_RATE_MAX_THRESHOLD;
- 	
- 	int oxygen_saturation = 10;
- 	int blood_pressure = 10;
-  int	temperature = 101;
-  int respiration = 0;
- 	int heart_rate = 1;
+ 	int oxygen_saturation = get_oxygen_saturation();
+ 	int blood_pressure = 100; // get_blood_pressure();
+  	int	temperature = 10; //get_temperature();
+  	int respiration = 1; //get_respiration();
+ 	int heart_rate = 0; // get_heart_rate();
  	
  	set_json_msg_vital_signs(band.output_buffers.vital_signs, MQTT_BAND_OUTPUT_BUFFER_SIZE, 
  															oxygen_saturation, 
@@ -476,8 +426,8 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
 {
     PROCESS_BEGIN();
     LOG_INFO("Process started.\n");
-		init_band();
-				    
+	init_band();
+	
     /* Main loop */
     while(1) {
 
@@ -504,24 +454,24 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
             	handle_state_subscribed();
             }
             					
-						if (band.state == MQTT_BAND_STATE_ACTIVE) {
-							generate_sensors_sample();
-						}
+			if (band.state == MQTT_BAND_STATE_ACTIVE) {
+				handle_state_active();
+			}
 
-						if (band.state == MQTT_BAND_STATE_DISCONNECTED) {
-							LOG_ERR("Disconnected form MQTT broker\n");	
-						  break;
-						}
+			if (band.state == MQTT_BAND_STATE_DISCONNECTED) {
+				LOG_ERR("Disconnected form MQTT broker\n");	
+     			  break;
+			}
 
-						etimer_reset(&band.state_check_timer);
-						continue;
-					}
+			etimer_reset(&band.state_check_timer);
+			continue;
+			}
 					
-				if(ev == button_hal_press_event &&	//  button_hal_periodic_event
+			if(ev == button_hal_press_event &&	//  button_hal_periodic_event
 					(MQTT_BAND_STATE_ACTIVE || MQTT_BAND_STATE_INACTIVE)) {
-				  handle_button_press((button_hal_button_t *)data);
-				  continue;
-    		}
+			  handle_button_press((button_hal_button_t *)data);
+		  continue;
+    	}
     }
   	
   	finish_band();
