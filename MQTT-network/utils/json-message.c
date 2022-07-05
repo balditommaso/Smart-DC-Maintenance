@@ -2,7 +2,7 @@
 #include <string.h>
 #include "os/sys/clock.h"
 #include "json-message.h"
-#include "../vital-signs/vital-signs-constants.h"
+#include "../vital-signs/band-sample-constants.h"
 
 static void clear_buffer(char *buffer, size_t size)
 {
@@ -27,12 +27,13 @@ void set_json_msg_status(char *message_buffer, size_t size, bool active)
   				 active);
 }
 
-void set_json_msg_vital_signs(char *message_buffer, size_t size, int oxygen_saturation, int blood_pressure, int temperature, int respiration, int heart_rate) 
+void set_json_msg_band_sample(char *message_buffer, size_t size, int battery_level, int oxygen_saturation, int blood_pressure, int temperature, int respiration, int heart_rate) 
 {
   clear_buffer(message_buffer, size);
   snprintf(message_buffer,
   				 size, 
-  				 "{\"oxygen_saturation\": %d, \"blood_pressure\": \"%d\", \"temperature\": %d, \"respiration\": %d, \"heart_rate\": \"%d\"}",
+  				 "{\"batteryLevel\": %d, \"oxygenSaturation\": %d, \"bloodPressure\": \"%d\", \"temperature\": %d, \"respiration\": %d, \"heartRate\": \"%d\"}",
+  				 battery_level,
   				 oxygen_saturation,
   				 blood_pressure,
   				 temperature,

@@ -1,13 +1,16 @@
 #include <stdlib.h>
-#include "vital-signs-constants.h"
+#include "band-sample-constants.h"
 
-struct vital_signs_sample {
+struct band_sample {
+	int battery_level;
 	int oxygen_saturation;
 	int blood_pressure;
 	int	temperature;
 	int respiration;
 	int heart_rate;
 };
+
+int get_battery_level();
 
 int get_oxygen_saturation();
 

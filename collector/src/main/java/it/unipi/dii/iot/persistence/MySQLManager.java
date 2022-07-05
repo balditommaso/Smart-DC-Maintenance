@@ -1,7 +1,7 @@
 package it.unipi.dii.iot.persistence;
 
 import it.unipi.dii.iot.model.BandDevice;
-import it.unipi.dii.iot.model.BandHeartbeat;
+import it.unipi.dii.iot.model.BandSample;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -53,13 +53,20 @@ public class MySQLManager {
         return 0;
     }
     
-    public void insertBandHeartbeat (BandHeartbeat bandHeartbeat) {
+    public void insertBandSample (BandSample bandSample) {
         try (
-                PreparedStatement statement = connection.prepareStatement("INSERT INTO band_heartbeat (idband, heart_frequency, battery_level) VALUES (?, ?, ?)")
+                PreparedStatement statement = connection.prepareStatement("INSERT INTO band_samples "
+                		+ "(timestamp,bandid,battery_level,oxygen_saturation,blood_pressure,temperature,respiration,heart_rate)"
+                		+ " VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
         ){
-            statement.setString(1, bandHeartbeat.getDeviceId());
-            statement.setInt(2, bandHeartbeat.getHeartFrequency());
-            statement.setInt(3, bandHeartbeat.getBatteryLevel());
+            statement.setTimestamp(1, bandSample.getTimestamp());
+            statement.setString(2, bandSample.getBandId());
+            statement.setInt(3, bandSample.getBatteryLevel());
+            statement.setInt(4, bandSample.getOxygenSaturation());
+            statement.setInt(5, bandSample.getBloodPressure());
+            statement.setInt(6, bandSample.getTemperature());
+            statement.setInt(7, bandSample.getRespiration());
+            statement.setInt(8, bandSample.getHeartRate());
             statement.executeUpdate();
 
         }

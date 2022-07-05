@@ -30,8 +30,8 @@
 #define MQTT_BAND_CMD_TOPIC_ALARM_STATE               "cmd/SDCM/%s/patient-state/alarm-state"
 #define MQTT_BAND_CMD_TOPIC_BAND_REGISTRATION      	  "cmd/SDCM/collector/monitor-registration"
 #define MQTT_BAND_CMD_TOPIC_PATIENT_REGISTRATION      "cmd/SDCM/collector/patient-registration"
-#define MQTT_BAND_CMD_TOPIC_STATUS			          "cmd/SDCM/%s/patient-state/status"
-#define MQTT_BAND_TELEMETRY_TOPIC_VITAL_SIGNS          "telemetry/SDCM/%s/patient-state/vital-signs"
+#define MQTT_BAND_CMD_TOPIC_STATUS			          "SDCM/band/%s/status"
+#define MQTT_BAND_TELEMETRY_TOPIC_BAND_SAMPLE         "SDCM/band/%s/sample"
 #define MQTT_BAND_TELEMETRY_TOPIC_ALARM_STATE         "telemetry/SDCM/%s/patient-state/alarm-state"
 
 #endif /* SMART_ICU_MQTT_MONITOR_CONSTANTS_H */

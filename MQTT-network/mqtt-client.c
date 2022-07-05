@@ -11,7 +11,7 @@
 #include "dev/leds.h"
 #include "os/sys/log.h"
 #include "mqtt-client.h"
-#include "./vital-signs/vital-signs.h"
+#include "./vital-signs/band-sample.h"
 #include "./utils/json-message.h"
 #include "./utils/mqtt-client-constants.h"
 
@@ -59,7 +59,7 @@ struct mqtt_band {
 
   /* Buffers used to store the topics regarding telemetry data. */
   struct telemetry_topics {
-    char vital_signs[MQTT_BAND_TOPIC_MAX_LENGTH];
+    char band_sample[MQTT_BAND_TOPIC_MAX_LENGTH];
     char alarm_state[MQTT_BAND_TOPIC_MAX_LENGTH];
   } telemetry_topics;
   
@@ -68,7 +68,7 @@ struct mqtt_band {
     char status[MQTT_BAND_OUTPUT_BUFFER_SIZE];
     char patient_registration[MQTT_BAND_OUTPUT_BUFFER_SIZE];
     char band_registration[MQTT_BAND_OUTPUT_BUFFER_SIZE];
-    char vital_signs[MQTT_BAND_OUTPUT_BUFFER_SIZE];
+    char band_sample[MQTT_BAND_OUTPUT_BUFFER_SIZE];
     char alarm_state[MQTT_BAND_OUTPUT_BUFFER_SIZE];
   } output_buffers; 
 };
@@ -123,13 +123,13 @@ static void init_topics(void)
   snprintf(band.cmd_topics.patient_registration, MQTT_BAND_TOPIC_MAX_LENGTH, "%s",MQTT_BAND_CMD_TOPIC_PATIENT_REGISTRATION);
 
 	/* Telemetry topics. */
-  snprintf(band.telemetry_topics.vital_signs, MQTT_BAND_TOPIC_MAX_LENGTH, MQTT_BAND_TELEMETRY_TOPIC_VITAL_SIGNS, band.band_id);
+  snprintf(band.telemetry_topics.band_sample, MQTT_BAND_TOPIC_MAX_LENGTH, MQTT_BAND_TELEMETRY_TOPIC_BAND_SAMPLE, band.band_id);
   snprintf(band.telemetry_topics.alarm_state, MQTT_BAND_TOPIC_MAX_LENGTH, MQTT_BAND_TELEMETRY_TOPIC_ALARM_STATE, band.band_id);
 
 	LOG_DBG("Command alarm state topic: %s\n", band.cmd_topics.alarm_state);
   LOG_DBG("Command monitor registration topic: %s\n", band.cmd_topics.band_registration);
   LOG_DBG("Command patient registration topic: %s\n", band.cmd_topics.patient_registration);
-  LOG_DBG("Telemetry vital signs topic: %s\n", band.telemetry_topics.vital_signs);
+  LOG_DBG("Telemetry vital signs topic: %s\n", band.telemetry_topics.band_sample);
   LOG_DBG("Telemetry alarm state topic: %s\n", band.telemetry_topics.alarm_state);
 }
 
@@ -380,20 +380,22 @@ static void handle_button_press(button_hal_button_t *button)
 
 static void handle_state_active()
 {
+	int battery_level = 100;
  	int oxygen_saturation = get_oxygen_saturation();
  	int blood_pressure = 100; // get_blood_pressure();
   	int	temperature = 10; //get_temperature();
   	int respiration = 1; //get_respiration();
  	int heart_rate = 0; // get_heart_rate();
  	
- 	set_json_msg_vital_signs(band.output_buffers.vital_signs, MQTT_BAND_OUTPUT_BUFFER_SIZE, 
+ 	set_json_msg_band_sample(band.output_buffers.band_sample, MQTT_BAND_OUTPUT_BUFFER_SIZE, 
+ 															battery_level,
  															oxygen_saturation, 
  															blood_pressure, 
  															temperature,
  															respiration,
  															heart_rate);
  	
- 	publish(band.telemetry_topics.vital_signs, band.output_buffers.vital_signs);
+ 	publish(band.telemetry_topics.band_sample, band.output_buffers.band_sample);
 
   
   // Check if alarm

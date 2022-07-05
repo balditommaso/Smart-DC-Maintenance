@@ -1,6 +1,6 @@
-#include "vital-signs.h"
+#include "band-sample.h"
 
-static struct vital_signs_sample last_sample;
+static struct band_sample last_sample;
 
 int generate_sample(int last_sample, int max_deviation, int lower_bound, int upper_bound)
 {
