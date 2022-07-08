@@ -56,7 +56,7 @@ public class MySQLManager {
     public void insertBandSample (BandSample bandSample) {
         try (
                 PreparedStatement statement = connection.prepareStatement("INSERT INTO band_samples "
-                		+ "(timestamp,bandid,battery_level,oxygen_saturation,blood_pressure,temperature,respiration,heart_rate)"
+                		+ "(timestamp,bandid,batteryLevel,oxygenSaturation,bloodPressure,temperature,respiration,heartRate)"
                 		+ " VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
         ){
             statement.setTimestamp(1, bandSample.getTimestamp());
