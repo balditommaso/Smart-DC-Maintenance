@@ -14,17 +14,18 @@ void set_json_msg_band_registration(char *message_buffer, size_t size, char *ban
   clear_buffer(message_buffer, size);
   snprintf(message_buffer, 
   				 size, 
-  				 "{\"bandID\": \"%s\", \"registration\": true}",
+  				 "{\"bandId\": \"%s\", \"active\": false, \"alertOn\": false}",
   				 band_id);
 }
 
 void set_json_msg_status(char *message_buffer, size_t size, bool active)
 {
+  
   clear_buffer(message_buffer, size);
-  snprintf(message_buffer,
-  				 size, 
-  				 "{\"status\": %d}", 
-  				 active);
+  if (active)
+  	snprintf(message_buffer, size, "{\"active\": true, \"alertOn\": false}");
+  else			 
+  	snprintf(message_buffer, size, "{\"active\": false, \"alertOn\": false}");
 }
 
 void set_json_msg_band_sample(char *message_buffer, size_t size, int battery_level, int oxygen_saturation, int blood_pressure, int temperature, int respiration, int heart_rate) 
@@ -32,7 +33,7 @@ void set_json_msg_band_sample(char *message_buffer, size_t size, int battery_lev
   clear_buffer(message_buffer, size);
   snprintf(message_buffer,
   				 size, 
-  				 "{\"batteryLevel\": %d, \"oxygenSaturation\": %d, \"bloodPressure\": \"%d\", \"temperature\": %d, \"respiration\": %d, \"heartRate\": \"%d\"}",
+  				 "{\"batteryLevel\": %d, \"oxygenSaturation\": %d, \"bloodPressure\": %d, \"temperature\": %d, \"respiration\": %d, \"heartRate\": %d}",
   				 battery_level,
   				 oxygen_saturation,
   				 blood_pressure,
@@ -41,9 +42,11 @@ void set_json_msg_band_sample(char *message_buffer, size_t size, int battery_lev
   				 heart_rate);
 }
 
-void set_json_msg_alarm_started(char *message_buffer, size_t size)
+void set_json_msg_alarm_stopped(char *message_buffer, size_t size)
 {
   clear_buffer(message_buffer, size);
-  snprintf(message_buffer, size, "%s", "{\"alarm\": true}");
+  snprintf(message_buffer,
+  				 size, 
+  				 "{\"alertOn\": false}");
 }
 

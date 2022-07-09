@@ -33,8 +33,8 @@ PROCESS(mqtt_client_process, "MQTT Client");
 
 struct mqtt_band {
     char band_id[MQTT_BAND_ID_LENGTH];
-    //struct alarm_system alarm;
-    bool alarm;
+    int battery_level;
+
     /* Internal state. */
     clock_time_t state_check_interval;
     struct etimer state_check_timer;
@@ -44,29 +44,10 @@ struct mqtt_band {
         struct mqtt_connection connection;
         mqtt_status_t status;
     } mqtt_module;
-  
-  /* Buffers used to store the topics regarding commands. */
-    struct cmd_topics {
-        char patient_registration[MQTT_BAND_TOPIC_MAX_LENGTH];
-        char band_registration[MQTT_BAND_TOPIC_MAX_LENGTH];
-        char status[MQTT_BAND_TOPIC_MAX_LENGTH];
-        char alarm_state[MQTT_BAND_TOPIC_MAX_LENGTH];
-    } cmd_topics;
-
-  /* Buffers used to store the topics regarding telemetry data. */
-    struct telemetry_topics {
-        char band_sample[MQTT_BAND_TOPIC_MAX_LENGTH];
-        char alarm_state[MQTT_BAND_TOPIC_MAX_LENGTH];
-    } telemetry_topics;
-  
-    /* Buffers used to store the output messages. */
-    struct output_buffers {
-        char status[MQTT_BAND_OUTPUT_BUFFER_SIZE];
-        char patient_registration[MQTT_BAND_OUTPUT_BUFFER_SIZE];
-        char band_registration[MQTT_BAND_OUTPUT_BUFFER_SIZE];
-        char band_sample[MQTT_BAND_OUTPUT_BUFFER_SIZE];
-        char alarm_state[MQTT_BAND_OUTPUT_BUFFER_SIZE];
-    } output_buffers; 
+  	
+  /* Buffers used to store the topics and the output messages. */
+  	char topic_buffer[MQTT_BAND_TOPIC_MAX_LENGTH];
+  	char output_buffer[MQTT_BAND_OUTPUT_BUFFER_SIZE];
 };
 
 static struct mqtt_band band;
@@ -110,25 +91,6 @@ static bool have_connectivity(void)
     return true;
 }
 
-static void init_topics(void)
-{
-    /* Command topics. */
-    snprintf(band.cmd_topics.alarm_state, MQTT_BAND_TOPIC_MAX_LENGTH, MQTT_BAND_CMD_TOPIC_ALARM_STATE, band.band_id);
-    snprintf(band.cmd_topics.band_registration, MQTT_BAND_TOPIC_MAX_LENGTH, "%s", MQTT_BAND_CMD_TOPIC_BAND_REGISTRATION);
-    snprintf(band.cmd_topics.status, MQTT_BAND_TOPIC_MAX_LENGTH, "%s", MQTT_BAND_CMD_TOPIC_BAND_REGISTRATION);
-    snprintf(band.cmd_topics.patient_registration, MQTT_BAND_TOPIC_MAX_LENGTH, "%s",MQTT_BAND_CMD_TOPIC_PATIENT_REGISTRATION);
-
-    /* Telemetry topics. */
-    snprintf(band.telemetry_topics.band_sample, MQTT_BAND_TOPIC_MAX_LENGTH, MQTT_BAND_TELEMETRY_TOPIC_BAND_SAMPLE, band.band_id);
-    snprintf(band.telemetry_topics.alarm_state, MQTT_BAND_TOPIC_MAX_LENGTH, MQTT_BAND_TELEMETRY_TOPIC_ALARM_STATE, band.band_id);
-
-    LOG_DBG("Command alarm state topic: %s\n", band.cmd_topics.alarm_state);
-    LOG_DBG("Command monitor registration topic: %s\n", band.cmd_topics.band_registration);
-    LOG_DBG("Command patient registration topic: %s\n", band.cmd_topics.patient_registration);
-    LOG_DBG("Telemetry vital signs topic: %s\n", band.telemetry_topics.band_sample);
-    LOG_DBG("Telemetry alarm state topic: %s\n", band.telemetry_topics.alarm_state);
-}
-
 /*---------------------------------------------------------------------------*/
 static void publish(char *topic, char* output_buffer)
 {
@@ -158,6 +120,7 @@ static void publish(char *topic, char* output_buffer)
     }
 }
 
+/*---------------------------------------------------------------------------*/
 static void pub_handler(const char *topic, uint16_t topic_len, const uint8_t *chunk, uint16_t chunk_len)
 {
     LOG_INFO("Received %s in the topic %s.\n", chunk, topic);
@@ -167,14 +130,13 @@ static void pub_handler(const char *topic, uint16_t topic_len, const uint8_t *ch
             return;
 		}
 		
-    char start_alarm_msg[MQTT_BAND_INPUT_BUFFER_SIZE];
-    set_json_msg_alarm_started(start_alarm_msg, MQTT_BAND_INPUT_BUFFER_SIZE);
-    
-  	if(strcmp(start_alarm_msg, (char*)chunk) == 0) 
-    {
+    snprintf(band.topic_buffer, MQTT_BAND_TOPIC_MAX_LENGTH, MQTT_BAND_CMD_TOPIC_ALARM_STATE, band.band_id);
+    LOG_INFO("The topic %s.\n", band.topic_buffer);
+  	if(!strcmp(band.topic_buffer, (char*)topic)) {
     	LOG_INFO("Starting the alarm.\n");
-        //	alarm_start(&band.alarm); /* There is no need to notify the collector about the state change. */
-        //	ctimer_set(&blinking_timer, CLOCK_SECOND * BLINK_PERIOD, blinking, NULL);
+    	leds_on(LEDS_ALL);
+    	band.state = MQTT_BAND_STATE_ALARM_ON;
+    	// Blinking
     	return;
   	}
 
@@ -212,11 +174,11 @@ static void mqtt_event(struct mqtt_connection *m, mqtt_event_t event, void *data
     mqtt_suback_event_t *suback_event = (mqtt_suback_event_t *)data;
 
     if(suback_event->success) {
-      LOG_INFO("Application is subscribed to topic successfully\n");
-      band.state = MQTT_BAND_STATE_SUBSCRIBED;
+      	LOG_INFO("Application is subscribed to topic successfully\n");
+      	band.state = MQTT_BAND_STATE_SUBSCRIBED;
     } else {
-      LOG_ERR("Application failed to subscribe to topic (ret code %x)\n", suback_event->return_code);
-       band.state = MQTT_BAND_STATE_CONNECTED; /* Go back to the previous state and retry. */
+      	LOG_ERR("Application failed to subscribe to topic (ret code %x)\n", suback_event->return_code);
+       	band.state = MQTT_BAND_STATE_CONNECTED; /* Go back to the previous state and retry. */
     }
 	#else
     LOG_INFO("Application is subscribed to topic successfully\n");
@@ -240,8 +202,11 @@ static void mqtt_event(struct mqtt_connection *m, mqtt_event_t event, void *data
     }
 }
 
+/*---------------------------------------------------------------------------*/
 static void handle_state_init(void)
 {
+	band.battery_level = 100;
+	
     if(have_connectivity()) {
         LOG_INFO("Connected to the network. ");
         LOG_INFO_("Global address: ");
@@ -255,9 +220,10 @@ static void handle_state_init(void)
     }
 }
 
+/*---------------------------------------------------------------------------*/
 static bool handle_state_network_ok(void)
 {
-        /* Initialize the band ID as the global IPv6 address. */
+    /* Initialize the band ID as the global IPv6 address. */
     uiplib_ipaddr_snprint(band.band_id,
                         MQTT_BAND_ID_LENGTH,
                         &(uip_ds6_get_global(ADDR_PREFERRED)->ipaddr));
@@ -291,19 +257,18 @@ static bool handle_state_network_ok(void)
 }
 
 static bool handle_state_connected(void) 
-{
-    /* Initialize the topics, using the monitor ID. */
-    init_topics();
-    
+{    
     /* Subscribe to the topic of alarm commands sent by the collector. */
-    LOG_INFO("Subscribing to the topic %s.\n", band.cmd_topics.alarm_state);
+    snprintf(band.topic_buffer, MQTT_BAND_TOPIC_MAX_LENGTH, MQTT_BAND_CMD_TOPIC_ALARM_STATE, band.band_id);
+        
+    LOG_INFO("Subscribing to the topic %s.\n", band.topic_buffer);
     band.mqtt_module.status = mqtt_subscribe(&band.mqtt_module.connection,
                                             NULL,
-                                            band.cmd_topics.alarm_state,
+                                            band.topic_buffer,
                                             MQTT_QOS_LEVEL_0);
                                               
     if(band.mqtt_module.status != MQTT_STATUS_OK) {
-        LOG_ERR("Failed to subscribe to the topic %s.\n", band.cmd_topics.alarm_state);
+        LOG_ERR("Failed to subscribe to the topic %s.\n", band.topic_buffer);
         return false;
     }
 
@@ -311,20 +276,24 @@ static bool handle_state_connected(void)
     return true;                                       
 }
 
+/*---------------------------------------------------------------------------*/
 static void handle_state_subscribed(void)
 {
-/* Register the monitor sending a message to the collector. */
-    set_json_msg_band_registration(band.output_buffers.band_registration,
+	/* Register the band sending a message to the collector. */
+    set_json_msg_band_registration( band.output_buffer,
                                     MQTT_BAND_OUTPUT_BUFFER_SIZE,
                                     band.band_id);
-    publish(band.cmd_topics.band_registration, band.output_buffers.band_registration);
+                                    
+    snprintf(band.topic_buffer, MQTT_BAND_TOPIC_MAX_LENGTH, "%s", MQTT_BAND_CMD_TOPIC_BAND_REGISTRATION);
+    publish(band.topic_buffer, band.output_buffer);
 	band.state = MQTT_BAND_STATE_INACTIVE;
 }
 
-
+/*---------------------------------------------------------------------------*/
 static void handle_button_press(button_hal_button_t *button)
 {
 	LOG_INFO("Button press event: %d s.\n", button->press_duration_seconds);
+	snprintf(band.topic_buffer, MQTT_BAND_TOPIC_MAX_LENGTH, MQTT_BAND_CMD_TOPIC_STATUS, band.band_id);
 
     if (band.state == MQTT_BAND_STATE_INACTIVE) {															// && button->press_duration_seconds == MQTT_BAND_PRESS_DURATION 
         LOG_INFO("Band %s activated.\n", band.band_id);
@@ -332,55 +301,73 @@ static void handle_button_press(button_hal_button_t *button)
         leds_off(LEDS_ALL);
         leds_set(LEDS_NUM_TO_MASK(LEDS_GREEN));
         
-        set_json_msg_status(band.output_buffers.status, MQTT_BAND_OUTPUT_BUFFER_SIZE, true);
-        publish(band.cmd_topics.status, band.output_buffers.status);
+        set_json_msg_status(band.output_buffer, MQTT_BAND_OUTPUT_BUFFER_SIZE, true);
+        publish(band.topic_buffer, band.output_buffer);
         
         band.state = MQTT_BAND_STATE_ACTIVE;
     }
-    else if (band.state  == MQTT_BAND_STATE_ACTIVE) // && button->press_duration_seconds == MQTT_BAND_PRESS_DURATION 
+    else if (band.state == MQTT_BAND_STATE_ACTIVE || band.state == MQTT_BAND_STATE_BATTERY_LOW) // && button->press_duration_seconds == MQTT_BAND_PRESS_DURATION 
     {						
-        LOG_INFO("Band %s disactivated.\n", band.band_id);
+        LOG_INFO("Band %s disactivated. Charging\n", band.band_id);
+        
+       	band.battery_level = (band.battery_level < 100)?band.battery_level+1:100;
                     
         leds_off(LEDS_ALL);
         leds_set(LEDS_NUM_TO_MASK(LEDS_RED));
         
-        set_json_msg_status(band.output_buffers.status, MQTT_BAND_OUTPUT_BUFFER_SIZE, false);
-        publish(band.cmd_topics.status, band.output_buffers.status);
+        set_json_msg_status(band.output_buffer, MQTT_BAND_OUTPUT_BUFFER_SIZE, false);
+        publish(band.topic_buffer, band.output_buffer);
         
         band.state = MQTT_BAND_STATE_INACTIVE;
     }
+    else if (band.state == MQTT_BAND_STATE_ALARM_ON) 
+    {
+    	LOG_INFO("Band %s Alarm stopped.\n", band.band_id);
+    	
+    	// Stop blinking
+    	
+    	leds_off(LEDS_ALL);
+        leds_set(LEDS_NUM_TO_MASK(LEDS_RED));
+        
+        set_json_msg_alarm_stopped(band.output_buffer, MQTT_BAND_OUTPUT_BUFFER_SIZE);
+        publish(band.topic_buffer, band.output_buffer);
+    	
+    	band.state = MQTT_BAND_STATE_INACTIVE;
+    }
 }
 
+/*---------------------------------------------------------------------------*/
 static void handle_state_active()
 {
-	int battery_level = 100;
+	band.battery_level -= 1;
  	int oxygen_saturation = get_oxygen_saturation();
- 	int blood_pressure = 100;   // get_blood_pressure();
-  	int	temperature = 10;       //  get_temperature();
-  	int respiration = 1;        //  get_respiration();
- 	int heart_rate = 0;         // get_heart_rate();
+ 	int blood_pressure = get_blood_pressure();
+  	int	temperature = get_temperature();
+  	int respiration = get_respiration();
+ 	int heart_rate = get_heart_rate();
  	
- 	set_json_msg_band_sample(band.output_buffers.band_sample, MQTT_BAND_OUTPUT_BUFFER_SIZE, 
- 							battery_level,
+ 	set_json_msg_band_sample(band.output_buffer, MQTT_BAND_OUTPUT_BUFFER_SIZE, 
+ 							band.battery_level,
  							oxygen_saturation, 
  							blood_pressure, 
  							temperature,
  							respiration,
- 							heart_rate);
- 	
- 	publish(band.telemetry_topics.band_sample, band.output_buffers.band_sample);
-
+ 							heart_rate);						
+ 							
+ 	snprintf(band.topic_buffer, MQTT_BAND_TOPIC_MAX_LENGTH, MQTT_BAND_TELEMETRY_TOPIC_BAND_SAMPLE, band.band_id);
+ 	publish(band.topic_buffer, band.output_buffer);
   
-  // Check if alarm
-  /*  if(alarming_sample(min_threshold, max_threshold, sample)) {
-    bool alarm_state_changed;
-
-    LOG_INFO("Alarming %s sample detected: %d. Min threshold: %d, max threshold: %d\n",
-             sensor, sample, min_threshold, max_threshold);
-    LOG_INFO("Starting the alarm.\n");
-    }  */
+  	// Check if alarm battery level low
+    if(band.battery_level < BATTERY_LEVEL_LOW) {
+   		//bool alarm_state_changed;
+    	LOG_INFO("Alarming Battery Level too low: %d. Sensors stopped, recharge the band\n", band.battery_level);
+    	//snprintf(band.topic_buffer, MQTT_BAND_TOPIC_MAX_LENGTH, MQTT_BAND_TELEMETRY_TOPIC_BAND_SAMPLE, band.band_id);
+ 		//publish(band.topic_buffer, band.output_buffer);
+    	band.state = MQTT_BAND_STATE_BATTERY_LOW;
+    }
 }
 
+/*---------------------------------------------------------------------------*/
 static void init_band() 
 {
 	band.state = MQTT_BAND_STATE_INIT;
@@ -389,6 +376,7 @@ static void init_band()
     etimer_set(&band.state_check_timer, band.state_check_interval);
 }
 
+/*---------------------------------------------------------------------------*/
 static void finish_band()
 {
     etimer_stop(&band.state_check_timer);
@@ -435,7 +423,7 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
 		}
 					
 		if (ev == button_hal_press_event &&	//  button_hal_periodic_event
-		    (MQTT_BAND_STATE_ACTIVE || MQTT_BAND_STATE_INACTIVE)) {
+		    (MQTT_BAND_STATE_ACTIVE || MQTT_BAND_STATE_INACTIVE || MQTT_BAND_STATE_BATTERY_LOW)) {
 			handle_button_press((button_hal_button_t *)data);
 		    continue;
     	}

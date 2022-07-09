@@ -34,3 +34,43 @@ int get_oxygen_saturation()
 	return oxygen_saturation_sample;
 }
 
+int get_blood_pressure()
+{
+	int blood_pressure_sample = generate_sample(last_sample.blood_pressure,
+												BLOOD_PRESSURE_DEVIATION,
+												BLOOD_PRESSURE_LOWER_BOUND,
+												BLOOD_PRESSURE_UPPER_BOUND);
+	last_sample.blood_pressure = blood_pressure_sample;
+	return blood_pressure_sample;
+}
+
+int get_temperature()
+{
+	int temperature_sample = generate_sample(last_sample.temperature,
+												TEMPERATURE_DEVIATION,
+												TEMPERATURE_LOWER_BOUND,
+												TEMPERATURE_UPPER_BOUND);
+	last_sample.temperature = temperature_sample;
+	return temperature_sample;
+}
+
+int get_respiration()
+{
+	int respiration_sample = generate_sample(last_sample.respiration,
+												RESPIRATION_DEVIATION,
+												RESPIRATION_LOWER_BOUND,
+												RESPIRATION_UPPER_BOUND);
+	last_sample.respiration = respiration_sample;
+	return respiration_sample;
+}
+
+int get_heart_rate()
+{
+	int heart_rate_sample = generate_sample(last_sample.heart_rate,
+												HEART_RATE_DEVIATION,
+												HEART_RATE_LOWER_BOUND,
+												HEART_RATE_UPPER_BOUND);
+	last_sample.heart_rate = heart_rate_sample;
+	return heart_rate_sample;
+}
+

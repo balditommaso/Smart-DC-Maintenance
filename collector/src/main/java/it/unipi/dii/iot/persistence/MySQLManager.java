@@ -18,7 +18,7 @@ public class MySQLManager {
 
     public void insertBand (BandDevice bandDevice) {
         try (
-                PreparedStatement statement = connection.prepareStatement("INSERT INTO band_device (idband, active, alert_on) VALUES (?, ?, ?)")
+                PreparedStatement statement = connection.prepareStatement("INSERT INTO band_device (idband, active, alertOn) VALUES (?, ?, ?)")
         ){
             statement.setString(1, bandDevice.getId());
             statement.setBoolean(2, bandDevice.getActive());
@@ -35,12 +35,12 @@ public class MySQLManager {
     }
 
     public int updateBand (BandDevice bandDevice) {
-        System.out.println("UPDATE");
         try (
-                PreparedStatement statement = connection.prepareStatement("UPDATE band SET active = ? WHERE idband = ?")
+                PreparedStatement statement = connection.prepareStatement("UPDATE band_device SET active = ?, alertOn = ? WHERE idband = ?")
         ){
             statement.setBoolean(1, bandDevice.getActive());
-            statement.setString(2, bandDevice.getId());
+            statement.setBoolean(2, bandDevice.getAlertOn());
+            statement.setString(3, bandDevice.getId());
             if (statement.executeUpdate() != 1) throw new Exception("ERROR: not valid id " + bandDevice.getId());
         }
         catch (final SQLException e) {

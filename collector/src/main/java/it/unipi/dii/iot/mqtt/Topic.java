@@ -1,9 +1,10 @@
 package it.unipi.dii.iot.mqtt;
 
 public class Topic {
-	public static String ALL_BANDS = "SDCM/band/+/sample";
+	public static String ALL_BANDS_SAMPLES = "SDCM/band/+/sample";
+	public static String ALL_BANDS_STATUS = "SDCM/band/+/status";
     public static String ALL_COMMANDS_TOWARDS_COLLECTOR = "SDCM/collector/+";
-    public static String TURN_ON_ALARM = "SDCM/smartICU/band/%s/alarm";
+    public static String TURN_ON_ALARM = "SDCM/band/%s/alarm";
 
     
     public static Boolean isBandRegistration(String topic) {

@@ -11,6 +11,7 @@ public class Collector
     {
         MqttCollector mqttDriver = new MqttCollector();
         mqttDriver.start();
+        
         //mqttDriver.publish("000300030003", "band", "alert", "prova");
     }
 }

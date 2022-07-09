@@ -32,23 +32,26 @@ public class SampleCollector {
 		lastSamples.get(bandSample.getBandId()).add(bandSample);
 	}
 	
-	public List<Double> calculateWeightedAverages(String bandId) throws ArithmeticException {
+	public double[] calculateWeightedAverages(String bandId) throws ArithmeticException {
 		// 0 oxygenSaturation, 1 bloodPressure, 2 temperature, 3 respiration, 4 heartRate
 		List<BandSample> samples = lastSamples.get(bandId);
-		List<Double> results = new ArrayList<>(5);
-		
+		double[] results = new double[5];
+		if (samples == null)
+			return results;
+
         for (int i=0; i<samples.size(); i++) {
-        	results.set(0, results.get(0) + (i+1)*samples.get(i).getOxygenSaturation());
-        	results.set(1, results.get(1) + samples.get(i).getBloodPressure());
-        	results.set(2, results.get(2) + samples.get(i).getTemperature());
-        	results.set(3, results.get(3) + samples.get(i).getRespiration());
-        	results.set(4, results.get(4) + samples.get(i).getHeartRate());
+        	results[0] = results[0] + (i+1)*samples.get(i).getOxygenSaturation();
+        	results[1] = results[1] + (i+1)*samples.get(i).getBloodPressure();
+        	results[2] = results[2] + (i+1)*samples.get(i).getTemperature();
+        	results[3] = results[3] + (i+1)*samples.get(i).getRespiration();
+        	results[4] = results[4] + (i+1)*samples.get(i).getHeartRate();
         }
         
         double denom = (samples.size() * (samples.size()-1))/2;
+        if (denom == 0) denom = 1;
         
-        for (int i=0; i<results.size(); i++)
-        	results.set(i, results.get(i)/denom);
+        for (int i=0; i<5; i++)
+        	results[i] = results[i]/denom;
 
         return results;
     }

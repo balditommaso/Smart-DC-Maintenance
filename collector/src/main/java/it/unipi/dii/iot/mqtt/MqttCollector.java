@@ -29,7 +29,9 @@ public class MqttCollector implements MqttCallback {
     private final String clientId;
     private final String brokerURI;
     
+    // Thresholds
     private final int maxSamplesCollected;
+   // private final int oxygenSaturationThreshold;
 
 
     public MqttCollector () {
@@ -39,6 +41,7 @@ public class MqttCollector implements MqttCallback {
         clientId = "Collector1";
         brokerURI = "tcp://" + configParameters.getBrokerIp() + ":" + configParameters.getBrokerPort();
         maxSamplesCollected = 20; 	// configParameters.getMaxSamplesCollected()
+       // oxygenSaturationThreshold = configParameters.get
     }
     
     public void stop() {
@@ -62,10 +65,12 @@ public class MqttCollector implements MqttCallback {
             logger.log(Level.INFO, "Connected to the broker.");
             
             mqttClient.subscribe(Topic.ALL_COMMANDS_TOWARDS_COLLECTOR);
-            mqttClient.subscribe(Topic.ALL_BANDS);
-            logger.log(Level.INFO, String.format("Subscribed correctly to the topics %s, %s", 
+            mqttClient.subscribe(Topic.ALL_BANDS_STATUS);
+            mqttClient.subscribe(Topic.ALL_BANDS_SAMPLES);
+            logger.log(Level.INFO, String.format("Subscribed correctly to the topics %s, %s, %s", 
             		Topic.ALL_COMMANDS_TOWARDS_COLLECTOR,
-            		Topic.ALL_BANDS));
+            		Topic.ALL_BANDS_STATUS,
+            		Topic.ALL_BANDS_SAMPLES));
             
         	logger.log(Level.INFO, String.format("Connecting to the database %s.", brokerURI));
             mySQLManager = new MySQLManager(MySQLDriver.getConnection());
@@ -85,9 +90,15 @@ public class MqttCollector implements MqttCallback {
         sampleCollector = new SampleCollector(maxSamplesCollected);
     }
 
-    public void publish(String id, String topic, String action, String message) {
+    public void activateAlarm(String bandId, int alarmCode) {
+    	String topic = String.format(Topic.TURN_ON_ALARM, bandId);
+    	String message = "++++";
+    	
+    	if (alarmCode == 1)
+    		message = "Oxygen Saturation too low";
+    	
         try {
-            mqttClient.publish(topic + "/" + id + "/" + action, new MqttMessage(message.getBytes()));
+            mqttClient.publish(topic, new MqttMessage(message.getBytes()));
         } catch (MqttException me) {
             me.printStackTrace();
         }
@@ -107,29 +118,41 @@ public class MqttCollector implements MqttCallback {
         String payload = new String(mqttMessage.getPayload());  
     	
     	if (Topic.isBandRegistration(topic)) {
-    		//BandDevice bandDevice = parser.fromJson(payload, BandDevice.class);
-    		//mySQLManager.insertBand(bandDevice);
+            logger.log(Level.INFO, "Registering the sensor in the Database.");
+            
+    		BandDevice bandDevice = parser.fromJson(payload, BandDevice.class);
+    		mySQLManager.insertBand(bandDevice);
     	}   
     	
     	if (Topic.isBandStatus(topic)) {
+            logger.log(Level.INFO, "Updating the sensor status in the Database.");
+            
             BandDevice bandDevice = parser.fromJson(payload, BandDevice.class);
-            if (mySQLManager.updateBand(bandDevice) == 1) {
-                mySQLManager.insertBand(bandDevice);
-            }
+            bandDevice.setBandId(Topic.getBandId(topic));
+            System.out.println(bandDevice.toString());
+            mySQLManager.updateBand(bandDevice);
     	}
     	
     	if (Topic.isBandSample(topic)) {
+            logger.log(Level.INFO, "Registering the sample in the Database.");
+
     		BandSample bandSample = parser.fromJson(payload, BandSample.class);
         	bandSample.setBandId(Topic.getBandId(topic));
         	bandSample.setTimestamp(new Timestamp(System.currentTimeMillis()));
+        	
+        	//if (bandSample.isValid())
         	mySQLManager.insertBandSample(bandSample);
         	
+            logger.log(Level.INFO, "Adding the sample to the local cache.");
         	sampleCollector.addBandSample(bandSample);
         	
+            logger.log(Level.INFO, "Checking if alarm has to be activated.");
         	int ret = checkForAlarms(bandSample.getBandId());
         	
-        	if (ret != -1)
-        		publish(bandSample.getBandId(), "SDCM", "alarm", String.valueOf(ret));            	
+        	if (ret != -1) {
+                logger.log(Level.INFO, "Activating the alarm on the band.");
+                activateAlarm(bandSample.getBandId(), ret); 
+        	}
     	}
     }
 
@@ -139,21 +162,21 @@ public class MqttCollector implements MqttCallback {
     }
     
     private Integer checkForAlarms(String bandId) {
-    	ArrayList<Double> avgs = (ArrayList<Double>) sampleCollector.calculateWeightedAverages(bandId);
+    	double[] avgs = sampleCollector.calculateWeightedAverages(bandId);
     	
-    	if (avgs.get(0) < /*OXYGEN_SATURATION_THRESHOLD*/ 94)
+    	if (avgs[0] < /*OXYGEN_SATURATION_THRESHOLD*/ 94)
     		return 0;
     	
-    	if (avgs.get(1) < 80 || avgs.get(1) > 140)
+    	if (avgs[1] < 80 || avgs[1] > 140)
     		return 1;
     	
-    	if (avgs.get(2) < 36 || avgs.get(2) > 37)
+    	if (avgs[2] < 36 || avgs[2] > 37)
     		return 2;
     	
-    	if (avgs.get(3) < 15|| avgs.get(3) > 20)
+    	if (avgs[3] < 15 || avgs[3] > 20)
     		return 3;
     	
-    	if (avgs.get(4) < 60|| avgs.get(4) > 100)
+    	if (avgs[4] < 60 || avgs[4] > 100)
     		return 4;
     	
     	return -1;

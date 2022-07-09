@@ -34,4 +34,12 @@ public class BandSample {
 	public int getHeartRate() { return heartRate; }
 	public void setBandId(String bandId) { this.bandId = bandId; }
 	public void setTimestamp(Timestamp timestamp) { this.timestamp = timestamp; }
+	
+	public String toString() {
+		String str = "bandId: " + bandId +", timestamp: " + timestamp +
+				" , batteryLevel: " + batteryLevel + ", oxygenSaturation: " + oxygenSaturation + 
+				" , bloodPressure: " + bloodPressure + ", temperature: " + temperature + 
+				" , respiration: " + respiration + ", heartRate: " + heartRate;
+		return str;
+	}
 }
