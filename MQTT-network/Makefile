@@ -11,6 +11,6 @@ MODULES += $(CONTIKI_NG_APP_LAYER_DIR)/mqtt
 
 MODULES_REL += arch/platform/$(TARGET)
 MODULES_REL += $(SDCM)/MQTT-network/utils
-MODULES_REL += $(SDCM)/MQTT-network/vital-signs
+MODULES_REL += $(SDCM)/MQTT-network/band-samples
 
 include $(CONTIKI)/Makefile.include

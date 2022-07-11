@@ -12,8 +12,17 @@ public class ConfigParameters {
 
     private String brokerIp;
     private int brokerPort;
-    private int maxAttempt;
-    private int secondsToWait;
+    private int maxSamplesCache;
+    
+    private int oxygenSaturationThreshold;
+    private int bloodPressureLowerThreshold;
+    private int bloodPressureHigherThreshold;
+    private double temperatureLowerThreshold;
+    private double temperatureHigherThreshold;
+    private int respirationLowerThreshold;
+    private int respirationHigherThreshold;
+    private int heartRateLowerThreshold;
+    private int heartRateHigherThreshold;
 
     public ConfigParameters(String configFilePath) {
     	try{
@@ -29,8 +38,18 @@ public class ConfigParameters {
 
             brokerIp = prop.getProperty("brokerIp");
             brokerPort = Integer.parseInt(prop.getProperty("brokerPort"));
-            maxAttempt = Integer.parseInt(prop.getProperty("maxAttempt"));
-            secondsToWait = Integer.parseInt(prop.getProperty("secondsToWait"));
+            maxSamplesCache = Integer.parseInt(prop.getProperty("maxSamplesCache"));
+            
+            oxygenSaturationThreshold = Integer.parseInt(prop.getProperty("oxygenSaturationThreshold"));
+            bloodPressureLowerThreshold = Integer.parseInt(prop.getProperty("bloodPressureLowerThreshold")); 
+            bloodPressureHigherThreshold = Integer.parseInt(prop.getProperty("bloodPressureHigherThreshold")); 
+            temperatureLowerThreshold = Double.parseDouble(prop.getProperty("temperatureLowerThreshold")); 
+            temperatureHigherThreshold = Double.parseDouble(prop.getProperty("temperatureHigherThreshold")); 
+            respirationLowerThreshold = Integer.parseInt(prop.getProperty("respirationLowerThreshold")); 
+            respirationHigherThreshold = Integer.parseInt(prop.getProperty("respirationHigherThreshold")); 
+            heartRateLowerThreshold = Integer.parseInt(prop.getProperty("heartRateLowerThreshold")); 
+            heartRateHigherThreshold = Integer.parseInt(prop.getProperty("heartRateHigherThreshold")); 
+            
         }
         catch(Exception e){
             e.printStackTrace();
@@ -49,19 +68,17 @@ public class ConfigParameters {
     public String getDatabasePassword() { return databasePassword; }
     public String getDatabaseName() { return databaseName; }
 
-    public String getBrokerIp() {
-        return brokerIp;
-    }
+    public String getBrokerIp() { return brokerIp; }
+    public int getBrokerPort() { return brokerPort; }
+    public int getMaxSamplesCache() { return maxSamplesCache; }
 
-    public int getBrokerPort() {
-        return brokerPort;
-    }
-
-    public int getMaxAttempt() {
-        return maxAttempt;
-    }
-
-    public int getSecondsToWait() {
-        return secondsToWait;
-    }
+    public int getOxygenSaturationThreshold() { return oxygenSaturationThreshold; }
+    public int getBloodPressureLowerThreshold() { return bloodPressureLowerThreshold; }
+    public int getBloodPressureHigherThreshold() { return bloodPressureHigherThreshold; }
+    public double getTemperatureLowerThreshold() { return temperatureLowerThreshold; }
+    public double getTemperatureHigherThreshold() { return temperatureHigherThreshold; }
+    public int getRespirationLowerThreshold() { return respirationLowerThreshold; }
+    public int getRespirationHigherThreshold() { return respirationHigherThreshold; }
+    public int getHeartRateLowerThreshold() { return heartRateLowerThreshold; }
+    public int getHeartRateHigherThreshold() { return heartRateHigherThreshold; }
 }

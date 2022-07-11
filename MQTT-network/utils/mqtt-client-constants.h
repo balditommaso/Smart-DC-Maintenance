@@ -23,10 +23,10 @@
 #define MQTT_BAND_STATE_ACTIVE                     		 7 	/* Band weared. */
 #define MQTT_BAND_STATE_INACTIVE                         8 	/* Band weared. */
 #define MQTT_BAND_STATE_BATTERY_LOW                      9 	/* Band battery too low. */
-#define MQTT_BAND_STATE_ALARM_ON                      	 10 /* Band alarm active. */
+#define MQTT_BAND_STATE_ALERT_ON                      	 10 /* Band alarm active. */
 
 /* MQTT command and telemetry topics. */
 #define MQTT_BAND_CMD_TOPIC_BAND_REGISTRATION      	  	"SDCM/collector/band-registration"
 #define MQTT_BAND_CMD_TOPIC_STATUS			          	"SDCM/band/%s/status"
 #define MQTT_BAND_TELEMETRY_TOPIC_BAND_SAMPLE         	"SDCM/band/%s/sample"
-#define MQTT_BAND_CMD_TOPIC_ALARM_STATE               	"SDCM/band/%s/alarm"	/* Subscribe. */
+#define MQTT_BAND_CMD_TOPIC_ALERT_STATE               	"SDCM/band/%s/alarm"	/* Subscribe. */

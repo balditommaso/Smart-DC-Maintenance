@@ -8,14 +8,8 @@ import it.unipi.dii.iot.persistence.MySQLManager;
 import org.eclipse.paho.client.mqttv3.*;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonParseException;
-
-import java.awt.List;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -29,9 +23,17 @@ public class MqttCollector implements MqttCallback {
     private final String clientId;
     private final String brokerURI;
     
-    // Thresholds
-    private final int maxSamplesCollected;
-   // private final int oxygenSaturationThreshold;
+    // Alert Thresholds
+    private final int maxSamplesCache;
+    private final int oxygenSaturationThreshold;
+    private final int bloodPressureLowerThreshold;
+    private final int bloodPressureHigherThreshold;
+    private final double temperatureLowerThreshold;
+    private final double temperatureHigherThreshold;
+    private final int respirationLowerThreshold;
+    private final int respirationHigherThreshold;
+    private final int heartRateLowerThreshold;
+    private final int heartRateHigherThreshold;
 
 
     public MqttCollector () {
@@ -40,8 +42,16 @@ public class MqttCollector implements MqttCallback {
         ConfigParameters configParameters = new ConfigParameters("config.properties");
         clientId = "Collector1";
         brokerURI = "tcp://" + configParameters.getBrokerIp() + ":" + configParameters.getBrokerPort();
-        maxSamplesCollected = 20; 	// configParameters.getMaxSamplesCollected()
-       // oxygenSaturationThreshold = configParameters.get
+        maxSamplesCache = configParameters.getMaxSamplesCache();
+        oxygenSaturationThreshold = configParameters.getOxygenSaturationThreshold();
+        bloodPressureLowerThreshold = configParameters.getBloodPressureLowerThreshold();
+        bloodPressureHigherThreshold = configParameters.getBloodPressureHigherThreshold();
+        temperatureLowerThreshold = configParameters.getTemperatureLowerThreshold();
+        temperatureHigherThreshold = configParameters.getTemperatureHigherThreshold();
+        respirationLowerThreshold = configParameters.getRespirationLowerThreshold();
+        respirationHigherThreshold = configParameters.getRespirationHigherThreshold();
+        heartRateLowerThreshold = configParameters.getHeartRateLowerThreshold();
+        heartRateHigherThreshold = configParameters.getHeartRateHigherThreshold();
     }
     
     public void stop() {
@@ -87,15 +97,25 @@ public class MqttCollector implements MqttCallback {
             stop();
         }
         
-        sampleCollector = new SampleCollector(maxSamplesCollected);
+        sampleCollector = new SampleCollector(maxSamplesCache);
     }
 
     public void activateAlarm(String bandId, int alarmCode) {
     	String topic = String.format(Topic.TURN_ON_ALARM, bandId);
-    	String message = "++++";
+    	String message = "**";
     	
-    	if (alarmCode == 1)
-    		message = "Oxygen Saturation too low";
+    	if (alarmCode == 0)
+    		message = "Oxygen Saturation value is below threshold";
+    	else if (alarmCode == 1)
+    		message = "Blood Pressure value is not within thresholds";
+    	else if (alarmCode == 2)
+    		message = "Temperature value is not within thresholds";
+    	else if (alarmCode == 3)
+    		message = "Respiration value is not within thresholds";
+    	else if (alarmCode == 5)
+    		message = "Heart Rate value is not within thresholds";
+    	
+    	message += "**";
     	
         try {
             mqttClient.publish(topic, new MqttMessage(message.getBytes()));
@@ -129,7 +149,6 @@ public class MqttCollector implements MqttCallback {
             
             BandDevice bandDevice = parser.fromJson(payload, BandDevice.class);
             bandDevice.setBandId(Topic.getBandId(topic));
-            System.out.println(bandDevice.toString());
             mySQLManager.updateBand(bandDevice);
     	}
     	
@@ -152,6 +171,9 @@ public class MqttCollector implements MqttCallback {
         	if (ret != -1) {
                 logger.log(Level.INFO, "Activating the alarm on the band.");
                 activateAlarm(bandSample.getBandId(), ret); 
+                
+                // Update the status of the band in the database
+                mySQLManager.updateBand(new BandDevice(Topic.getBandId(topic), false, true));
         	}
     	}
     }
@@ -164,19 +186,19 @@ public class MqttCollector implements MqttCallback {
     private Integer checkForAlarms(String bandId) {
     	double[] avgs = sampleCollector.calculateWeightedAverages(bandId);
     	
-    	if (avgs[0] < /*OXYGEN_SATURATION_THRESHOLD*/ 94)
+    	if (avgs[0] < oxygenSaturationThreshold)
     		return 0;
     	
-    	if (avgs[1] < 80 || avgs[1] > 140)
+    	if (avgs[1] < bloodPressureLowerThreshold || avgs[1] > bloodPressureHigherThreshold)
     		return 1;
-    	
-    	if (avgs[2] < 36 || avgs[2] > 37)
+
+    	if (avgs[2] < temperatureLowerThreshold || avgs[2] > temperatureHigherThreshold)
     		return 2;
     	
-    	if (avgs[3] < 15 || avgs[3] > 20)
+    	if (avgs[3] < respirationLowerThreshold || avgs[3] > respirationHigherThreshold)
     		return 3;
-    	
-    	if (avgs[4] < 60 || avgs[4] > 100)
+
+    	if (avgs[4] < heartRateLowerThreshold || avgs[4] > heartRateHigherThreshold)
     		return 4;
     	
     	return -1;

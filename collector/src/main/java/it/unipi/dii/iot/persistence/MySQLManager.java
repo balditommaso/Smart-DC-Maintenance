@@ -64,7 +64,7 @@ public class MySQLManager {
             statement.setInt(3, bandSample.getBatteryLevel());
             statement.setInt(4, bandSample.getOxygenSaturation());
             statement.setInt(5, bandSample.getBloodPressure());
-            statement.setInt(6, bandSample.getTemperature());
+            statement.setDouble(6, bandSample.getTemperature());
             statement.setInt(7, bandSample.getRespiration());
             statement.setInt(8, bandSample.getHeartRate());
             statement.executeUpdate();

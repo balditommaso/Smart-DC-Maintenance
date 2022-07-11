@@ -2,7 +2,7 @@
 #include <string.h>
 #include "os/sys/clock.h"
 #include "json-message.h"
-#include "../vital-signs/band-sample-constants.h"
+#include "../band-samples/band-sample-constants.h"
 
 static void clear_buffer(char *buffer, size_t size)
 {
@@ -28,12 +28,12 @@ void set_json_msg_status(char *message_buffer, size_t size, bool active)
   	snprintf(message_buffer, size, "{\"active\": false, \"alertOn\": false}");
 }
 
-void set_json_msg_band_sample(char *message_buffer, size_t size, int battery_level, int oxygen_saturation, int blood_pressure, int temperature, int respiration, int heart_rate) 
+void set_json_msg_band_sample(char *message_buffer, size_t size, int battery_level, int oxygen_saturation, int blood_pressure, double temperature, int respiration, int heart_rate) 
 {
   clear_buffer(message_buffer, size);
   snprintf(message_buffer,
   				 size, 
-  				 "{\"batteryLevel\": %d, \"oxygenSaturation\": %d, \"bloodPressure\": %d, \"temperature\": %d, \"respiration\": %d, \"heartRate\": %d}",
+  				 "{\"batteryLevel\": %d, \"oxygenSaturation\": %d, \"bloodPressure\": %d, \"temperature\": %.1f, \"respiration\": %d, \"heartRate\": %d}",
   				 battery_level,
   				 oxygen_saturation,
   				 blood_pressure,
@@ -42,11 +42,11 @@ void set_json_msg_band_sample(char *message_buffer, size_t size, int battery_lev
   				 heart_rate);
 }
 
-void set_json_msg_alarm_stopped(char *message_buffer, size_t size)
+void set_json_msg_alert_stopped(char *message_buffer, size_t size)
 {
   clear_buffer(message_buffer, size);
   snprintf(message_buffer,
   				 size, 
-  				 "{\"alertOn\": false}");
+  				 "{\"active\": false, \"alertOn\": false}");
 }
 

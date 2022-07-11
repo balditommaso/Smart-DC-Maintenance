@@ -2,15 +2,24 @@
 
 static struct band_sample last_sample;
 
-int generate_sample(int last_sample, int max_deviation, int lower_bound, int upper_bound)
+void init_sample_values()
 {
-  int deviation, new_sample;
+	last_sample.oxygen_saturation = OXYGEN_SATURATION_INIT;
+	last_sample.blood_pressure = BLOOD_PRESSURE_INIT;
+	last_sample.temperature = TEMPERATURE_INIT;
+	last_sample.respiration = RESPIRATION_INIT;
+	last_sample.heart_rate = HEART_RATE_INIT;
+}
 
-  int min = -1*max_deviation;
-  int max = max_deviation;
+double generate_sample(double last_sample, double max_deviation, double lower_bound, double upper_bound)
+{
+  double deviation, new_sample;
+
+  double min = -1.0*max_deviation;
+  double max = max_deviation;
   
   
-  deviation = min + rand()/(RAND_MAX/(max - min +  1) + 1);
+  deviation = ((max-min)*rand())/RAND_MAX + min;
   new_sample = last_sample + deviation;
 
   if(new_sample < lower_bound) {
@@ -44,12 +53,13 @@ int get_blood_pressure()
 	return blood_pressure_sample;
 }
 
-int get_temperature()
+double get_temperature()
 {
-	int temperature_sample = generate_sample(last_sample.temperature,
+	double temperature_sample = generate_sample(last_sample.temperature,
 												TEMPERATURE_DEVIATION,
 												TEMPERATURE_LOWER_BOUND,
 												TEMPERATURE_UPPER_BOUND);
+	temperature_sample = roundf(temperature_sample * 10) / 10;	// 1 decimal place
 	last_sample.temperature = temperature_sample;
 	return temperature_sample;
 }

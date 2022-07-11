@@ -47,7 +47,7 @@ public class SampleCollector {
         	results[4] = results[4] + (i+1)*samples.get(i).getHeartRate();
         }
         
-        double denom = (samples.size() * (samples.size()-1))/2;
+        double denom = ((samples.size() + 1) * samples.size())/2;
         if (denom == 0) denom = 1;
         
         for (int i=0; i<5; i++)

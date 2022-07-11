@@ -8,12 +8,12 @@ public class BandSample {
 	private int batteryLevel;
 	private int oxygenSaturation;
 	private int bloodPressure;
-	private int	temperature;
+	private double temperature;
 	private int respiration;
 	private int heartRate;
 	
 	public BandSample(String bandId, Timestamp timestamp, int batteryLevel, int oxygenSaturation,
-			int bloodPressure, int temperature, int respiration, int heartRate) {
+			int bloodPressure, double temperature, int respiration, int heartRate) {
 		this.bandId = bandId;
 		this.timestamp = timestamp;
 		this.batteryLevel = batteryLevel;
@@ -29,7 +29,7 @@ public class BandSample {
 	public int getBatteryLevel() { return batteryLevel; }
 	public int getOxygenSaturation() { return oxygenSaturation; }
 	public int getBloodPressure() { return bloodPressure; }
-	public int getTemperature() { return temperature; }
+	public double getTemperature() { return temperature; }
 	public int getRespiration() { return respiration; }
 	public int getHeartRate() { return heartRate; }
 	public void setBandId(String bandId) { this.bandId = bandId; }

@@ -1,8 +1,5 @@
 package it.unipi.dii.iot.model;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class BandDevice {
 	private String bandId;
 	private Boolean active;
