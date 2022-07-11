@@ -24,6 +24,10 @@ public class ConfigParameters {
     private int heartRateLowerThreshold;
     private int heartRateHigherThreshold;
 
+    private String registrationResource;
+
+
+
     public ConfigParameters(String configFilePath) {
     	try{
             FileInputStream fis = new FileInputStream(configFilePath);
@@ -39,6 +43,8 @@ public class ConfigParameters {
             brokerIp = prop.getProperty("brokerIp");
             brokerPort = Integer.parseInt(prop.getProperty("brokerPort"));
             maxSamplesCache = Integer.parseInt(prop.getProperty("maxSamplesCache"));
+
+            registrationResource = prop.getProperty("registrationResource");
             
             oxygenSaturationThreshold = Integer.parseInt(prop.getProperty("oxygenSaturationThreshold"));
             bloodPressureLowerThreshold = Integer.parseInt(prop.getProperty("bloodPressureLowerThreshold")); 
@@ -71,6 +77,10 @@ public class ConfigParameters {
     public String getBrokerIp() { return brokerIp; }
     public int getBrokerPort() { return brokerPort; }
     public int getMaxSamplesCache() { return maxSamplesCache; }
+
+    public String getRegistrationResource() {
+        return registrationResource;
+    }
 
     public int getOxygenSaturationThreshold() { return oxygenSaturationThreshold; }
     public int getBloodPressureLowerThreshold() { return bloodPressureLowerThreshold; }
