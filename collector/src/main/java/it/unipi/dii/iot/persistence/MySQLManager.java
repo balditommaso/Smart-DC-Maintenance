@@ -24,7 +24,6 @@ public class MySQLManager {
             statement.setBoolean(2, bandDevice.getActive());
             statement.setBoolean(3, bandDevice.getAlertOn());
             statement.executeUpdate();
-
         }
         catch (final SQLIntegrityConstraintViolationException e) {
             System.out.printf("INFO: band device %s already registered in the database.%n", bandDevice.getId());
