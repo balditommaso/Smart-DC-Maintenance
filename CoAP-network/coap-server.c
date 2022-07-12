@@ -1,20 +1,26 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include "sys/etimer.h"
-#include "sys/ctimer.h"
+
 #include "contiki.h"
 #include "coap-engine.h"
+#include "sys/etimer.h"
+#include "sys/ctimer.h"
 #include "dev/leds.h"
 #include "coap-blocking-api.h"
+
 #include "node-id.h"
+#include "net/ipv6/uip-icmp6.h"
+#include "net/ipv6/sicslowpan.h"
 #include "net/ipv6/simple-udp.h"
 #include "net/ipv6/uip.h"
 #include "net/ipv6/uip-ds6.h"
 #include "net/ipv6/uip-debug.h"
-#include "routing/routing.h"
+#include "net/routing/routing.h"
+
+#include "./sensor-signs/sensor-sample.h"
 #include "./utils/coap-server-constants.h"
 #include "./utils/json-message.h"
+
+#include <stdlib.h>
+#include <string.h>
 
 /* Log configuration */
 #include "sys/log.h"
@@ -36,7 +42,7 @@ struct coap_rack {
 };
 
 PROCESS(contiki_coap_server, "CoAP Server");
-AUTOSTART_PROCESSES(&contiki_coap_server)
+AUTOSTART_PROCESSES(&contiki_coap_server);
 
 static struct coap_rack rack;
 
