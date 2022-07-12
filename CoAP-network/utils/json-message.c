@@ -49,7 +49,7 @@ void set_json_msg_check_request(char *message_buffer, size_t size)
                 "{\"checkRequest\": \"true\"}");
 }
 
-bool parse_json_alarm(char *message_buffer, size_t size, int value)
+bool parse_json_alarm(const char *message_buffer, size_t size, int value)
 {
     int len = sscanf(message_buffer, "{\"alarm\": \"%d\"}", &value);
     return (len == 1) ? true : false;

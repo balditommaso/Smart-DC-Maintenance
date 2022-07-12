@@ -21,7 +21,6 @@
 /* COAP resources path */
 #define COAP_TEMPERATURE_PATH               "rack/temperature"
 #define COAP_HUMIDITY_PATH      	        "rack/humidity"
-#define COAP_LEDS_PATH      	            "rack/leds"
 #define COAP_OXYGEN_PATH                    "sensor/oxygen"
 
 #define TEMPERATURE_INIT                        20

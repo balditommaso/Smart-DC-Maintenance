@@ -5,4 +5,4 @@ int get_temperature();
 
 int get_humidity();
 
-int get_oxygen_level();
+float get_oxygen_level();

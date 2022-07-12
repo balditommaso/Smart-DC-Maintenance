@@ -1,6 +1,6 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+//#include <stdlib.h>
+//#include <stdio.h>
+//#include <string.h>
 #include <time.h>
 #include <stdint.h>
 #include "contiki.h"
@@ -9,7 +9,7 @@
 #include "sys/node-id.h"
 #include "./utils/coap-server-constants.h"
 #include "./utils/json-message.h"
-#include "./sensor-samples/sensor-sample.h"
+#include "../sensor-signs/sensor-sample.h"
 
 /* Log configuration */
 #include "sys/log.h"
@@ -22,9 +22,7 @@ struct temperature_sensor {
 };
 
 // init sensor data
-static struct temp_sensor;
-temp_sensor.temp = TEMPERATURE_INIT;
-temp_sensor.alarm = false;
+static struct temperature_sensor temp_sensor = {.temp = TEMPERATURE_INIT, .alarm = false};
 
 static void temperature_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
 static void temperature_put_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
@@ -36,7 +34,7 @@ EVENT_RESOURCE(res_temperature,
                 NULL,
                 temperature_put_handler,
                 NULL,
-                temperature_periodic_handler);
+                temperature_event_handler);
 
 static void temperature_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset)
 {
@@ -47,8 +45,8 @@ static void temperature_get_handler(coap_message_t *request, coap_message_t *res
 
     // send message
     coap_set_header_content_format(response, APPLICATION_JSON);
-    coap_set_header_etag(response, (uint_t*)&len, 1);
-    coap_set_payload(response, message, len));
+    coap_set_header_etag(response, (uint8_t*)&len, 1);
+    coap_set_payload(response, message, len);
 }
 
 static void temperature_event_handler()
@@ -68,7 +66,7 @@ static void temperature_put_handler(coap_message_t *request, coap_message_t *res
     bool success = true;
     int triggered = 0;
 
-    if ((len = coap_get_post_variable(request, "value", &value))}
+    if ((len = coap_get_post_variable(request, "value", &value)))
     {
         LOG_INFO("new request: %s\n", value);
         if (parse_json_alarm(value, len, triggered))

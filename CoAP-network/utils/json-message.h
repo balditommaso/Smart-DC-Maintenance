@@ -9,4 +9,4 @@ void set_json_msg_oxygen_sample(char *message_buffer, size_t size, float oxygen_
 
 void set_json_msg_check_request(char *message_buffer, size_t size);
 
-bool parse_json_alarm(char *message_buffer, size_t size, bool value);
+bool parse_json_alarm(const char *message_buffer, size_t size, int value);

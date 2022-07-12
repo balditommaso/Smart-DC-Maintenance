@@ -34,15 +34,17 @@ struct coap_rack {
     struct etimer state_check_timer;
     uint8_t state;
 
-    struct coap_client {
-        coap_endpoint_t server_endpoint;
-        coap_message_t request[1];
-    } coap_client;
-
+    // struct coap_client {
+    //    coap_endpoint_t server_endpoint;
+    //    coap_message_t request[1];
+    //} coap_client;
 };
 
-PROCESS(contiki_coap_server, "CoAP Server");
+
+PROCESS_NAME(contiki_coap_server);
 AUTOSTART_PROCESSES(&contiki_coap_server);
+PROCESS(contiki_coap_server, "CoAP Server");
+
 
 static struct coap_rack rack;
 
@@ -52,38 +54,6 @@ static void init_rack_state()
     rack.state_check_interval = COAP_STATE_CHECK_INTERVAL * CLOCK_SECOND;
     rack.state = COAP_STATE_INIT;
     etimer_set(&rack.state_check_timer, rack.state_check_interval);
-}
-
-static void handle_registration() 
-{
-    char url[COAP_URL_SIZE];
-    sprintf(url, "coap://[%s]:%d", SERVER_IP, SERVER_PORT);
-    LOG_INFO("Try to register to %s\n", url);
-
-    coap_endpoint_parse(url, strlen(url), &rack.coap_client.server_endpoint);       // TODO: ask edo if we need to separate this part
-    // prepare the message
-    char message[COAP_CHUNK_SIZE];
-    set_json_msg_sensor_registration(message, COAP_CHUNK_SIZE, rack.rack_id, RACK_SENSOR);
-    coap_init_message(rack.coap_client.request, COAP_TYPE_CON, COAP_POST, 0);
-    coap_set_header_uri_path(rack.coap_client.request, SERVER_SERVICE);
-    coap_set_payload(rack.coap_client.request, (uint8_t*)message, sizeof(message)-1);
-
-    // send request of registration
-    COAP_BLOCKING_REQUEST(&rack.coap_client.server_endpoint, rack.coap_client.request, client_chunk_handler);
-}
-
-static bool is_connected() 
-{
-    if (NETSTACK_ROUTING.node_is_reachable()) 
-    {
-        LOG_INFO("The Border Router is reachable\n")
-        uiplib_ipaddr_snprint(rack.rack_id,
-                            COAP_ID_LENGTH,
-                            &(uip_ds6_get_global(ADDR_PREFERRED)->ipaddr));
-        return true;
-    }
-    LOG_INFO("Waiting for connection with the Border Router\n");
-    return false;
 }
 
 void client_chunk_handler(coap_message_t *response)
@@ -100,12 +70,44 @@ void client_chunk_handler(coap_message_t *response)
         rack.state = COAP_STATE_ACTIVE;
 }
 
+/* static void handle_rack_registration() 
+{
+    char url[COAP_URL_SIZE];
+    sprintf(url, "coap://[%s]:%d", SERVER_IP, SERVER_PORT);
+    LOG_INFO("Try to register to %s\n", url);
+
+    coap_endpoint_parse(url, strlen(url), &server_endpoint);       // TODO: ask edo if we need to separate this part
+    // prepare the message
+    char message[COAP_CHUNK_SIZE];
+    set_json_msg_sensor_registration(message, COAP_CHUNK_SIZE, rack.rack_id, RACK_SENSOR);
+    coap_init_message(request, COAP_TYPE_CON, COAP_POST, 0);
+    coap_set_header_uri_path(request, SERVER_SERVICE);
+    coap_set_payload(request, (uint8_t*)message, sizeof(message)-1);
+
+    // send request of registration
+    COAP_BLOCKING_REQUEST(&server_endpoint, request, client_chunk_handler);
+}
+*/
+static bool is_connected() 
+{
+    if (NETSTACK_ROUTING.node_is_reachable()) 
+    {
+        LOG_INFO("The Border Router is reachable\n");
+        uiplib_ipaddr_snprint(rack.rack_id,
+                            COAP_ID_LENGTH,
+                            &(uip_ds6_get_global(ADDR_PREFERRED)->ipaddr));
+        return true;
+    }
+    LOG_INFO("Waiting for connection with the Border Router\n");
+    return false;
+}
+
 static void finish_rack() 
 {
     etimer_stop(&rack.state_check_timer);
 }
 
-extern coap_resource_t res_temperature, res_humidity;
+extern coap_resource_t res_temperature/*, res_humidity*/;
 
 PROCESS_THREAD(contiki_coap_server, ev, data) 
 {
@@ -119,15 +121,16 @@ PROCESS_THREAD(contiki_coap_server, ev, data)
     PROCESS_PAUSE();
 
     // activate the resource
-    LOG_INFO("Starting the rack-sensor CoAP Server\n")
+    LOG_INFO("Starting the rack-sensor CoAP Server\n");
     coap_activate_resource(&res_temperature, COAP_TEMPERATURE_PATH);
-    coap_activate_resource(&res_humidity, COAP_HUMIDITY_PATH);
-
+    // coap_activate_resource(&res_humidity, COAP_HUMIDITY_PATH);
+    static coap_endpoint_t server_endpoint;
+    static coap_message_t request[1];
     // TODO
     while(1) 
     {
         PROCESS_YIELD();
-        if ((ev == PROCESS_EVENT_TIMER && data == &band.state_check_timer) || 
+        if ((ev == PROCESS_EVENT_TIMER && data == &rack.state_check_timer) || 
             (ev == PROCESS_EVENT_POLL))
         {
             switch (rack.state)
@@ -140,14 +143,28 @@ PROCESS_THREAD(contiki_coap_server, ev, data)
                 case COAP_STATE_NETWORK_OK: 
                     LOG_INFO("Sending registration message\n");
                     leds_single_toggle(LEDS_RED);
-                    handle_registration();
+                    char url[COAP_URL_SIZE];
+                    sprintf(url, "coap://[%s]:%d", SERVER_IP, SERVER_PORT);
+                    LOG_INFO("Try to register to %s\n", url);
+
+                    coap_endpoint_parse(url, strlen(url), &server_endpoint);       // TODO: ask edo if we need to separate this part
+                    // prepare the message
+                    char message[COAP_CHUNK_SIZE];
+                    set_json_msg_sensor_registration(message, COAP_CHUNK_SIZE, rack.rack_id, RACK_SENSOR);
+                    coap_init_message(request, COAP_TYPE_CON, COAP_POST, 0);
+                    coap_set_header_uri_path(request, SERVER_SERVICE);
+                    coap_set_payload(request, (uint8_t*)message, sizeof(message)-1);
+
+                    // send request of registration
+                    COAP_BLOCKING_REQUEST(&server_endpoint, request, client_chunk_handler);
+                    //handle_rack_registration();
                     break;
                 case COAP_STATE_ACTIVE: 
                     LOG_INFO("Sending data\n");
                     leds_single_off(LEDS_RED);
                     leds_single_on(LEDS_GREEN);
                     res_temperature.trigger();
-                    res_humidity.trigger();
+                    // res_humidity.trigger();
                     break;
                 default:
                     LOG_ERR("ERROR: Invalid state");
