@@ -38,7 +38,12 @@ public class CoAPRegistrationResource extends CoapResource {
         // aggiungi al DB
         Gson parser = new Gson();
         String payload = new String(exchange.getRequestPayload());
-        RackSensor rackSensor = parser.fromJson(payload, RackSensor.class);
+        RackSensor rackSensor = null;
+        try {
+            rackSensor = parser.fromJson(payload, RackSensor.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         System.out.println(rackSensor.toString());
         mySQLManager.insertSensor(rackSensor);
 
