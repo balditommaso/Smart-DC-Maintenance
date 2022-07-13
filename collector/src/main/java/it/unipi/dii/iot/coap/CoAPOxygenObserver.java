@@ -63,6 +63,7 @@ public class CoAPOxygenObserver {
                         if ((sample.getValue() <= lowerBound || sample.getValue() >= upperBound)
                                 && !rack.getAlarm()) {
                             // set alarm
+                            System.out.printf("INFO: activating alarm to %s\n", rack.getRackSensorId());
                             rack.setAlarm(true);
                             mySQLManager.updateRackSensor(rack);
 
@@ -74,6 +75,7 @@ public class CoAPOxygenObserver {
                         } else if ((sample.getValue() > lowerBound && sample.getValue() < upperBound)
                                 && rack.getAlarm()) {
                             // reset alarm
+                            System.out.printf("INFO: deactivating alarm to %s\n", rack.getRackSensorId());
                             rack.setAlarm(false);
                             mySQLManager.updateRackSensor(rack);
                             try {
