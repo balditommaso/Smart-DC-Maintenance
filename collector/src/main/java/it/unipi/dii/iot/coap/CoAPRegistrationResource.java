@@ -20,7 +20,7 @@ public class CoAPRegistrationResource extends CoapResource {
 
     public void handlePOST(CoapExchange exchange) {
         Response response = new Response(CoAP.ResponseCode.CONTINUE);
-        System.out.println("Coap registration request: " + Arrays.toString(exchange.getRequestPayload()));
+        System.out.println("Coap registration request: " + new String(exchange.getRequestPayload()));
         // accept only JSON encoding
         if (exchange.getRequestOptions().getAccept() == MediaTypeRegistry.APPLICATION_JSON) {
             response.getOptions().setContentFormat(MediaTypeRegistry.APPLICATION_JSON);
