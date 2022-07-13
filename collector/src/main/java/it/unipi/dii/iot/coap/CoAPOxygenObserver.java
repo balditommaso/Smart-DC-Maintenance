@@ -69,22 +69,14 @@ public class CoAPOxygenObserver {
                             rack.setAlarm(true);
                             mySQLManager.updateRackSensor(rack);
                             //TODO
-                            try {
-                                client.put("value=1", MediaTypeRegistry.TEXT_PLAIN);
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
+                            setAlarm(true);
                         } else if ((sample.getValue() > lowerBound && sample.getValue() < upperBound)
                                 && rack.getAlarm()) {
                             // reset alarm
                             System.out.printf("INFO: deactivating alarm to %s\n", rack.getRackSensorId());
                             rack.setAlarm(false);
                             mySQLManager.updateRackSensor(rack);
-                            try {
-                                client.put("value=0", MediaTypeRegistry.TEXT_PLAIN);
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
+                            setAlarm(false);
                         }
                     }
 
@@ -95,6 +87,26 @@ public class CoAPOxygenObserver {
                     }
                 }
         );
+    }
+
+    public void setAlarm(boolean mode) {
+        if (client == null)
+            return;
+        String message = "alarm=" + (mode ? 1 : 0);
+        client.put(new CoapHandler() {
+            @Override
+            public void onLoad(CoapResponse coapResponse) {
+                if (coapResponse != null) {
+                    if(!coapResponse.isSuccess())
+                        System.out.printf("ERROR: Cannot send the PUT request to %s\n", rack.getRackSensorId());
+                }
+            }
+
+            @Override
+            public void onError() {
+                System.out.printf("ERROR: Cannot contact %s\n", client.getURI());
+            }
+        }, message, MediaTypeRegistry.TEXT_PLAIN);
     }
 
     public void stopObservingResource() {
