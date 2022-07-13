@@ -39,7 +39,7 @@ EVENT_RESOURCE(res_temperature,
 static void temperature_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset)
 {
     char message[COAP_CHUNK_SIZE];
-    set_json_msg_temperature_sample(message, COAP_CHUNK_SIZE, temp_sensor.temp);
+    set_json_msg_sample(message, COAP_CHUNK_SIZE, temp_sensor.temp);
     LOG_INFO("new sample: %s\n", message);
     size_t len = strlen(message);
 
@@ -52,6 +52,7 @@ static void temperature_get_handler(coap_message_t *request, coap_message_t *res
 static void temperature_event_handler()
 {
     int new_sample = get_temperature(temp_sensor.temp);
+    LOG_INFO("new event triggered -> %d\n", new_sample);
     if (new_sample != temp_sensor.temp)
     {
         temp_sensor.temp = new_sample;
@@ -64,23 +65,14 @@ static void temperature_put_handler(coap_message_t *request, coap_message_t *res
     const char* value = NULL;
     size_t len = 0;
     bool success = true;
-    int triggered = 0;
 
     if ((len = coap_get_post_variable(request, "value", &value)))
     {
         LOG_INFO("new request: %s\n", value);
-        if (parse_json_alarm(value, len, triggered))
-        {
-            if (triggered)
-                leds_single_on(LEDS_RED);
-            else
-                leds_single_off(LEDS_RED);
-        }
-        else 
-        {
-            LOG_ERR("Not valid parameters.\n");
-            success = false;
-        }
+        if (parse_json_alarm(value, len))
+            leds_single_on(LEDS_RED);
+        else
+            leds_single_off(LEDS_RED);
     }
     else
     {
