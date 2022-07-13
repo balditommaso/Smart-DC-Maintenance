@@ -58,9 +58,16 @@ void client_chunk_handler(coap_message_t *response)
     }
 
     const uint8_t *chunk;
+    int success = 0;
     int len = coap_get_payload(response, &chunk);
-    if (strncmp((char*)chunk, "Success", len) == 0) 
-        rack.state = COAP_STATE_ACTIVE;
+
+    LOG_INFO("Received response: %s\n", (char*)chunk);
+    if (parse_json_registration((char*)chunk, (size_t)len, success))
+    {
+        if (success == 1) 
+            rack.state = COAP_STATE_ACTIVE;
+    }
+    
 }
 
 static void is_connected() 
@@ -128,7 +135,7 @@ PROCESS_THREAD(contiki_coap_server, ev, data)
                 coap_endpoint_parse(url, strlen(url), &server_endpoint);       // TODO: ask edo if we need to separate this part
                 // prepare the message
                 char message[COAP_CHUNK_SIZE];
-                set_json_msg_sensor_registration(message, COAP_CHUNK_SIZE, rack.rack_id, RACK_SENSOR);
+                set_json_msg_sensor_registration(message, COAP_CHUNK_SIZE, rack.rack_id);
                 coap_init_message(request, COAP_TYPE_CON, COAP_POST, 0);
                 coap_set_header_uri_path(request, SERVER_SERVICE);
                 coap_set_header_content_format(request, APPLICATION_JSON);

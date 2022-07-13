@@ -4,12 +4,12 @@
 #include "json-message.h"
 #include "../sensor-signs/sensor-sample-constants.h"
 
-void set_json_msg_sensor_registration(char *message_buffer, size_t size, char *sensor_id, char *sensor_type)
+void set_json_msg_sensor_registration(char *message_buffer, size_t size, char *sensor_id)
 {
     memset(message_buffer, 0, size);
     snprintf(message_buffer,
                 size,
-                "{\"sensorId\": \"%s\", \"sensorType\": \"%s\"}",
+                "{\"sensorId\": \"%s\", \"alarm\": false}",
                 sensor_id,
                 sensor_type);
 }
@@ -52,5 +52,11 @@ void set_json_msg_check_request(char *message_buffer, size_t size)
 bool parse_json_alarm(const char *message_buffer, size_t size, int value)
 {
     int len = sscanf(message_buffer, "{\"alarm\": \"%d\"}", &value);
+    return (len == 1) ? true : false;
+}
+
+bool parse_json_registration(const char *message_buffer, size_t size, int value)
+{
+    int len = sscanf(message_buffer, "{\"registration\": \"%d\"}", &value);
     return (len == 1) ? true : false;
 }
