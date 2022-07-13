@@ -77,11 +77,10 @@ public class MySQLManager {
 
     public void insertSensor (RackSensor rack) {
         try (
-                PreparedStatement statement = connection.prepareStatement("INSERT INTO sensors (idSensor, type, alarm) VALUES (?, ?, ?)")
+                PreparedStatement statement = connection.prepareStatement("INSERT INTO rack_sensor (idSensor, alarm) VALUES (?, ?, ?)")
         ){
             statement.setString(1, rack.getRackSensorId());
-            statement.setString(2, rack.getSensorType());
-            statement.setBoolean(3, rack.isAlarm());
+            statement.setBoolean(2, rack.isAlarm());
             statement.executeUpdate();
         }
         catch (final SQLIntegrityConstraintViolationException e) {
