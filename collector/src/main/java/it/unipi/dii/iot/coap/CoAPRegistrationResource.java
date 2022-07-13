@@ -49,9 +49,10 @@ public class CoAPRegistrationResource extends CoapResource {
             e.printStackTrace();
         }
         System.out.println(rackSensor.toString());
-        mySQLManager.insertSensor(rackSensor);
+        mySQLManager.insertRackSensor(rackSensor);
 
-        // osserva le risorse TODO
+        // osserva le risorse
+        new CoAPTemperatureObserver(rackSensor);
 
 
         // rispondi

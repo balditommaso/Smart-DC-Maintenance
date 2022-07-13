@@ -25,7 +25,16 @@ public class ConfigParameters {
     private int heartRateHigherThreshold;
 
     private String registrationResource;
+    private String temperatureResource;
+    private String humidityResource;
+    private String oxygenResource;
 
+    private int temperatureLowerBound;
+    private int temperatureUpperBound;
+    private int humidityLowerBound;
+    private int humidityUpperBound;
+    private double oxygenLowerBound;
+    private double oxygenUpperBound;
 
 
     public ConfigParameters(String configFilePath) {
@@ -45,7 +54,17 @@ public class ConfigParameters {
             maxSamplesCache = Integer.parseInt(prop.getProperty("maxSamplesCache"));
 
             registrationResource = prop.getProperty("registrationResource");
-            
+            temperatureResource = prop.getProperty("temperatureResource");
+            humidityResource = prop.getProperty("humidityResource");
+            oxygenResource = prop.getProperty("oxygenResource");
+
+            temperatureLowerBound = Integer.parseInt(prop.getProperty("temperatureLowerBound"));
+            temperatureUpperBound = Integer.parseInt(prop.getProperty("temperatureUpperBound"));
+            humidityLowerBound = Integer.parseInt(prop.getProperty("humidityLowerBound"));
+            humidityUpperBound = Integer.parseInt(prop.getProperty("humidityUpperBound"));
+            oxygenLowerBound = Double.parseDouble(prop.getProperty("oxygenLowerBound"));
+            oxygenUpperBound = Double.parseDouble(prop.getProperty("oxygenUpperBound"));
+
             oxygenSaturationThreshold = Integer.parseInt(prop.getProperty("oxygenSaturationThreshold"));
             bloodPressureLowerThreshold = Integer.parseInt(prop.getProperty("bloodPressureLowerThreshold")); 
             bloodPressureHigherThreshold = Integer.parseInt(prop.getProperty("bloodPressureHigherThreshold")); 
@@ -80,6 +99,42 @@ public class ConfigParameters {
 
     public String getRegistrationResource() {
         return registrationResource;
+    }
+
+    public String getTemperatureResource() {
+        return temperatureResource;
+    }
+
+    public String getHumidityResource() {
+        return humidityResource;
+    }
+
+    public String getOxygenResource() {
+        return oxygenResource;
+    }
+
+    public int getTemperatureLowerBound() {
+        return temperatureLowerBound;
+    }
+
+    public int getTemperatureUpperBound() {
+        return temperatureUpperBound;
+    }
+
+    public int getHumidityLowerBound() {
+        return humidityLowerBound;
+    }
+
+    public int getHumidityUpperBound() {
+        return humidityUpperBound;
+    }
+
+    public double getOxygenLowerBound() {
+        return oxygenLowerBound;
+    }
+
+    public double getOxygenUpperBound() {
+        return oxygenUpperBound;
     }
 
     public int getOxygenSaturationThreshold() { return oxygenSaturationThreshold; }
