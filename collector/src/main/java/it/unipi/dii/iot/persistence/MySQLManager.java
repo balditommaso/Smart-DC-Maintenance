@@ -2,6 +2,7 @@ package it.unipi.dii.iot.persistence;
 
 import it.unipi.dii.iot.model.BandDevice;
 import it.unipi.dii.iot.model.BandSample;
+import it.unipi.dii.iot.model.RackSensor;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -68,6 +69,23 @@ public class MySQLManager {
             statement.setInt(8, bandSample.getHeartRate());
             statement.executeUpdate();
 
+        }
+        catch (final SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void insertSensor (RackSensor rack) {
+        try (
+                PreparedStatement statement = connection.prepareStatement("INSERT INTO sensors (idSensor, type, alarm) VALUES (?, ?, ?)")
+        ){
+            statement.setString(1, rack.getRackSensorId());
+            statement.setString(2, rack.getSensorType());
+            statement.setBoolean(3, rack.isAlarm());
+            statement.executeUpdate();
+        }
+        catch (final SQLIntegrityConstraintViolationException e) {
+            System.out.printf("INFO: band device %s already registered in the database.%n", rack.getRackSensorId());
         }
         catch (final SQLException e) {
             e.printStackTrace();

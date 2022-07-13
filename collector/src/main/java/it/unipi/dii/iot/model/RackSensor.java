@@ -2,11 +2,21 @@ package it.unipi.dii.iot.model;
 
 public class RackSensor {
     private String rackSensorId;
+    private String sensorType;
     private boolean alarm;
 
-    public RackSensor(String rackSensorId, boolean alarm) {
+    public RackSensor(String rackSensorId, String sensorType, boolean alarm) {
         this.rackSensorId = rackSensorId;
+        this.sensorType = sensorType;
         this.alarm = alarm;
+    }
+
+    public String getSensorType() {
+        return sensorType;
+    }
+
+    public void setSensorType(String sensorType) {
+        this.sensorType = sensorType;
     }
 
     public String getRackSensorId() {
