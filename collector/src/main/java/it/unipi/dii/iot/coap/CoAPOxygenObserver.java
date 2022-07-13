@@ -68,18 +68,26 @@ public class CoAPOxygenObserver {
                             System.out.printf("INFO: activating alarm to %s\n", rack.getRackSensorId());
                             rack.setAlarm(true);
                             mySQLManager.updateRackSensor(rack);
-                            Request request = new Request(CoAP.Code.PUT);
-                            request.getOptions().addUriQuery("alarm=1");
-                            client.advanced(request);
+                            try {
+                                Request request = new Request(CoAP.Code.PUT);
+                                request.getOptions().addUriQuery("alarm=1");
+                                client.advanced(request);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
                         } else if ((sample.getValue() > lowerBound && sample.getValue() < upperBound)
                                 && rack.getAlarm()) {
                             // reset alarm
                             System.out.printf("INFO: deactivating alarm to %s\n", rack.getRackSensorId());
                             rack.setAlarm(false);
                             mySQLManager.updateRackSensor(rack);
-                            Request request = new Request(CoAP.Code.PUT);
-                            request.getOptions().addUriQuery("alarm=0");
-                            client.advanced(request);
+                            try {
+                                Request request = new Request(CoAP.Code.PUT);
+                                request.getOptions().addUriQuery("alarm=0");
+                                client.advanced(request);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
 
