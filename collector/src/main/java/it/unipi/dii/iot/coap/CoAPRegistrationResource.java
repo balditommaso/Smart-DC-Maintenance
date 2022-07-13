@@ -51,18 +51,16 @@ public class CoAPRegistrationResource extends CoapResource {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println(rackSensor.toString());
         mySQLManager.insertRackSensor(rackSensor);
-
+        System.out.println("Check if already active");
         if (!activeResources.containsKey(rackSensor.getRackSensorId())) {
             System.out.println("active observing");
             CoAPTemperatureObserver temperatureObserver = new CoAPTemperatureObserver(rackSensor);
             activeResources.put(rackSensor.getRackSensorId(), temperatureObserver);
+            // rispondi
+            response.getOptions().setContentFormat(MediaTypeRegistry.APPLICATION_JSON);
+            response.setPayload("{ \"registration\": 1}");
+            exchange.respond(response);
         }
-
-        // rispondi
-        response.getOptions().setContentFormat(MediaTypeRegistry.APPLICATION_JSON);
-        response.setPayload("{ \"registration\": 1}");
-        exchange.respond(response);
     }
 }
