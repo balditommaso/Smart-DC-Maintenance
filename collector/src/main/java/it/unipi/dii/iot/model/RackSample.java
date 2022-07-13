@@ -46,5 +46,15 @@ public class RackSample {
     public void setValue(int value) {
         this.value = value;
     }
+
+    @Override
+    public String toString() {
+        return "RackSample{" +
+                "rackSensorId='" + rackSensorId + '\'' +
+                ", timestamp=" + timestamp +
+                ", measure='" + measure + '\'' +
+                ", value=" + value +
+                '}';
+    }
 }
 

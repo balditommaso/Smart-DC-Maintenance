@@ -42,14 +42,14 @@ public class CoAPTemperatureObserver {
         }
 
         this.rack = rack;
-        System.out.printf("INFO: Start observing temperature of %s%n", rack.getRackSensorId());
+        System.out.printf("INFO: Start observing temperature of %s\n", rack.getRackSensorId());
         relation = client.observe(
                 new CoapHandler() {
                     @Override
                     public void onLoad(CoapResponse coapResponse) {
                         // read response JSON
                         String content = new String(coapResponse.getPayload());
-                        System.out.printf("INFO: received from %s: %s%n", rack.getRackSensorId(), content);
+                        System.out.printf("INFO: received from %s: %s\n", rack.getRackSensorId(), content);
 
                         Gson parser = new Gson();
                         JsonReader reader = new JsonReader(new StringReader(content));
@@ -59,6 +59,7 @@ public class CoAPTemperatureObserver {
                         rackSample.setRackSensorId(rack.getRackSensorId());
                         rackSample.setTimestamp(new Timestamp(System.currentTimeMillis()));
                         rackSample.setMeasure(configParameters.getTemperatureResource());
+                        System.out.println(rackSample);
                         // ADD to DB
                         mySQLManager.insertRackSensorSample(rackSample);
                         // verify threshold
