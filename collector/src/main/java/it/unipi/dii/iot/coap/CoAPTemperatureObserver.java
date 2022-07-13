@@ -32,8 +32,8 @@ public class CoAPTemperatureObserver {
         upperBound = configParameters.getTemperatureUpperBound();
         lowerBound = configParameters.getTemperatureLowerBound();
 
-        //System.out.println("coap://[" + rack.getRackSensorId() + "]/" + configParameters.getTemperatureResource());
-        client = new CoapClient("coap://[" + rack.getRackSensorId() + "]:5683/" + configParameters.getTemperatureResource());
+        client = new CoapClient("coap://[" + rack.getRackSensorId() + "]:" + configParameters.getCoapPort()
+                + "/" + configParameters.getTemperatureResource());
 
         try {
             mySQLManager = new MySQLManager(MySQLDriver.getConnection());
@@ -48,7 +48,7 @@ public class CoAPTemperatureObserver {
                     @Override
                     public void onLoad(CoapResponse coapResponse) {
                         // read response JSON
-                        String content = coapResponse.getResponseText();
+                        String content = new String(coapResponse.getPayload());
                         System.out.printf("INFO: received from %s: %s%n", rack.getRackSensorId(), content);
 
                         Gson parser = new Gson();

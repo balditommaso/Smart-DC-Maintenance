@@ -24,6 +24,7 @@ public class ConfigParameters {
     private int heartRateLowerThreshold;
     private int heartRateHigherThreshold;
 
+    private int coapPort;
     private String registrationResource;
     private String temperatureResource;
     private String humidityResource;
@@ -53,6 +54,7 @@ public class ConfigParameters {
             brokerPort = Integer.parseInt(prop.getProperty("brokerPort"));
             maxSamplesCache = Integer.parseInt(prop.getProperty("maxSamplesCache"));
 
+            coapPort = Integer.parseInt(prop.getProperty("coapPort"));
             registrationResource = prop.getProperty("registrationResource");
             temperatureResource = prop.getProperty("temperatureResource");
             humidityResource = prop.getProperty("humidityResource");
@@ -96,6 +98,10 @@ public class ConfigParameters {
     public String getBrokerIp() { return brokerIp; }
     public int getBrokerPort() { return brokerPort; }
     public int getMaxSamplesCache() { return maxSamplesCache; }
+
+    public int getCoapPort() {
+        return coapPort;
+    }
 
     public String getRegistrationResource() {
         return registrationResource;
