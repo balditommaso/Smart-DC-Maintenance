@@ -5,10 +5,7 @@ import it.unipi.dii.iot.model.BandSample;
 import it.unipi.dii.iot.model.RackSample;
 import it.unipi.dii.iot.model.RackSensor;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.SQLIntegrityConstraintViolationException;
+import java.sql.*;
 
 public class MySQLManager {
 
@@ -74,6 +71,26 @@ public class MySQLManager {
         catch (final SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public boolean searchRackSensor(RackSensor rack) {
+        boolean find = false;
+        try (
+                PreparedStatement statement = connection.prepareStatement("SELECT * FROM rack_sensor WHERE idSensor = ?")
+        ){
+            statement.setString(1, rack.getRackSensorId());
+            ResultSet resultSet = statement.executeQuery();
+            find = (resultSet.getRow() == 1);
+            if (resultSet.getRow() == 1){
+                return true;
+            } else {
+                return false;
+            }
+        }
+        catch (final SQLException e) {
+            e.printStackTrace();
+        }
+        return find;
     }
 
     public void insertRackSensor (RackSensor rack) {

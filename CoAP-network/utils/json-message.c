@@ -9,20 +9,20 @@ void set_json_msg_sensor_registration(char *message_buffer, size_t size, char *s
     memset(message_buffer, 0, size);
     snprintf(message_buffer,
                 size,
-                "{\"sensorId\": \"%s\", \"alarm\": false}",
-                sensor_id,
-                sensor_type);
+                "{\"rackSensorId\": \"%s\", \"alarm\": false}",
+                sensor_id);
 }
 
-void set_json_msg_temperature_sample(char *message_buffer, size_t size, int temperature)
+void set_json_msg_sample(char *message_buffer, size_t size, int value)
 {
     memset(message_buffer, 0, size);
     snprintf(message_buffer,
                 size,
-                "{\"temperature\": \"%d\"}",
-                temperature);
+                "{\"value\": \"%d\"}",
+                value);
 }
 
+/*
 void set_json_msg_humidity_sample(char *message_buffer, size_t size, int humidity)
 {
     memset(message_buffer, 0, size);
@@ -31,6 +31,7 @@ void set_json_msg_humidity_sample(char *message_buffer, size_t size, int humidit
                 "{\"humidity\": \"%d\"}",
                 humidity);
 }
+*/
 
 void set_json_msg_oxygen_sample(char *message_buffer, size_t size, float oxygen_level)
 {
@@ -49,14 +50,24 @@ void set_json_msg_check_request(char *message_buffer, size_t size)
                 "{\"checkRequest\": \"true\"}");
 }
 
-bool parse_json_alarm(const char *message_buffer, size_t size, int value)
+int parse_json_alarm(const char *message_buffer, size_t size)
 {
-    int len = sscanf(message_buffer, "{\"alarm\": \"%d\"}", &value);
-    return (len == 1) ? true : false;
+    int value;
+    sscanf(message_buffer, "{\"alarm\": \"%d\"}", &value);
+    return value;
 }
 
-bool parse_json_registration(const char *message_buffer, size_t size, int value)
+int parse_json_registration(const char *message_buffer, size_t size)
 {
-    int len = sscanf(message_buffer, "{\"registration\": \"%d\"}", &value);
-    return (len == 1) ? true : false;
+    int value;
+    sscanf(message_buffer, "{\"registration\": \"%d\"}", &value);
+    return value;
+}
+
+void set_json_success_registration(char *message_buffer, size_t size)
+{
+    memset(message_buffer, 0, size);
+    snprintf(message_buffer,
+                size,
+                "{\"registration\": 1}");
 }

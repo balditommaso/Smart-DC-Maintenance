@@ -25,11 +25,14 @@ public class CoAPTemperatureObserver {
     private int lowerBound;
     private RackSensor rack;
 
+    private CoapObserveRelation relation;
+
     public CoAPTemperatureObserver(RackSensor rack) {
         ConfigParameters configParameters = new ConfigParameters("config.properties");
         upperBound = configParameters.getTemperatureUpperBound();
         lowerBound = configParameters.getTemperatureLowerBound();
 
+        System.out.println("coap://[" + rack.getRackSensorId() + "]/" + configParameters.getTemperatureResource());
         client = new CoapClient("coap://[" + rack.getRackSensorId() + "]/" + configParameters.getTemperatureResource());
 
         try {
@@ -40,7 +43,7 @@ public class CoAPTemperatureObserver {
 
         this.rack = rack;
         System.out.printf("INFO: Start observing temperature of %s%n", rack.getRackSensorId());
-        CoapObserveRelation relation = client.observe(
+        relation = client.observe(
                 new CoapHandler() {
                     @Override
                     public void onLoad(CoapResponse coapResponse) {
@@ -89,6 +92,9 @@ public class CoAPTemperatureObserver {
                     }
                 }
         );
+    }
+
+    public void stopObservingResource() {
         relation.proactiveCancel();
     }
 }

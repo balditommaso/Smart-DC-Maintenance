@@ -15,13 +15,16 @@ import org.eclipse.californium.core.server.resources.CoapExchange;
 import java.io.StringReader;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.HashMap;
 
 public class CoAPRegistrationResource extends CoapResource {
 
      private MySQLManager mySQLManager;
+     private HashMap<String, CoAPTemperatureObserver> activeResources;
 
     public CoAPRegistrationResource(String name) {
         super(name);
+        activeResources = new HashMap<>();
         try {
             mySQLManager = new MySQLManager(MySQLDriver.getConnection());
         } catch (SQLException e) {
@@ -48,14 +51,16 @@ public class CoAPRegistrationResource extends CoapResource {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println(rackSensor.toString());
-        mySQLManager.insertRackSensor(rackSensor);
+        //if(!mySQLManager.searchRackSensor(rackSensor)) {
+            mySQLManager.insertRackSensor(rackSensor);
+        //}
+        System.out.println("Check if already active");
+        if (!activeResources.containsKey(rackSensor.getRackSensorId())) {
+            System.out.println("active observing");
+            CoAPTemperatureObserver temperatureObserver = new CoAPTemperatureObserver(rackSensor);
+            activeResources.put(rackSensor.getRackSensorId(), temperatureObserver);
+        }
 
-        // osserva le risorse
-        new CoAPTemperatureObserver(rackSensor);
-
-
-        // rispondi
         response.getOptions().setContentFormat(MediaTypeRegistry.APPLICATION_JSON);
         response.setPayload("{ \"registration\": 1}");
         exchange.respond(response);
