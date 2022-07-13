@@ -74,7 +74,7 @@ public class CoAPTemperatureObserver {
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
-                        } else if ((rackSample.getValue() >= lowerBound && rackSample.getValue() <= upperBound)
+                        } else if ((rackSample.getValue() > lowerBound && rackSample.getValue() < upperBound)
                                     && rack.getAlarm()) {
                             // reset alarm
                             rack.setAlarm(false);
@@ -89,7 +89,8 @@ public class CoAPTemperatureObserver {
 
                     @Override
                     public void onError() {
-                        System.err.printf("ERROR: fail to observe %s%n", rack.getRackSensorId());
+                        System.err.printf("ERROR: fail to observe %s\n", rack.getRackSensorId());
+                        stopObservingResource();
                     }
                 }
         );
@@ -97,5 +98,6 @@ public class CoAPTemperatureObserver {
 
     public void stopObservingResource() {
         relation.proactiveCancel();
+        CoAPRegistrationResource.removeResource(rack);
     }
 }

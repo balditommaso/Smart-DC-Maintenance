@@ -20,7 +20,7 @@ import java.util.HashMap;
 public class CoAPRegistrationResource extends CoapResource {
 
      private MySQLManager mySQLManager;
-     private HashMap<String, CoAPTemperatureObserver> activeResources;
+     private static HashMap<String, CoAPTemperatureObserver> activeResources;
 
     public CoAPRegistrationResource(String name) {
         super(name);
@@ -63,5 +63,10 @@ public class CoAPRegistrationResource extends CoapResource {
         response.getOptions().setContentFormat(MediaTypeRegistry.APPLICATION_JSON);
         response.setPayload("{ \"registration\": 1}");
         exchange.respond(response);
+    }
+
+    public static void removeResource(RackSensor rack) {
+        activeResources.remove(rack.getRackSensorId());
+        System.out.printf("INFO: Removed the resource %s\n", rack.getRackSensorId());
     }
 }
