@@ -90,6 +90,7 @@ public class MySQLManager {
         catch (final SQLException e) {
             e.printStackTrace();
         }
+
     }
 
     public int updateRackSensor (RackSensor rackSensor) {
