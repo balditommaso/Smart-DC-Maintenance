@@ -52,34 +52,6 @@ struct mqtt_band {
 
 static struct mqtt_band band;
   
-
-/*
-// Periodic timer to check the state of the MQTT client
-#define STATE_MACHINE_PERIODIC     (CLOCK_SECOND >> 1)
-static struct ctimer blinking_timer;
-// global variable for the application
-#define ALERT_BLINK     3
-#define BLINK_PERIOD    2
-// static bool alert_on = false;
-static int blinking_count = 0;
-// static int battery_lvl = 100;
-*/
-/*
-// utility function
-static void blinking(void *ptr)
-{
-    if (blinking_count < ALERT_BLINK*2) 
-    {
-        blinking_count++;
-        leds_single_toggle(LEDS_RED);
-        ctimer_reset(&blinking_timer);
-    } 
-    else 
-    {
-        blinking_count = 0;
-    }
-}
-*/
 /*---------------------------------------------------------------------------*/
 
 static bool have_connectivity(void)
@@ -130,7 +102,7 @@ static void pub_handler(const char *topic, uint16_t topic_len, const uint8_t *ch
             return;
 		}
 		
-    snprintf(band.topic_buffer, MQTT_BAND_TOPIC_MAX_LENGTH, MQTT_BAND_CMD_TOPIC_ALERT_STATE, band.band_id);
+    snprintf(band.topic_buffer, MQTT_BAND_TOPIC_MAX_LENGTH, MQTT_BAND_TOPIC_ALERT_STATE, band.band_id);
     LOG_INFO("The topic %s.\n", band.topic_buffer);
   	if(!strcmp(band.topic_buffer, (char*)topic)) {
     	LOG_INFO("Starting the alert.\n");
@@ -257,7 +229,7 @@ static bool handle_state_network_ok(void)
 static bool handle_state_connected(void) 
 {    
     /* Subscribe to the topic of alarm commands sent by the collector. */
-    snprintf(band.topic_buffer, MQTT_BAND_TOPIC_MAX_LENGTH, MQTT_BAND_CMD_TOPIC_ALERT_STATE, band.band_id);
+    snprintf(band.topic_buffer, MQTT_BAND_TOPIC_MAX_LENGTH, MQTT_BAND_TOPIC_ALERT_STATE, band.band_id);
         
     LOG_INFO("Subscribing to the topic %s.\n", band.topic_buffer);
     band.mqtt_module.status = mqtt_subscribe(&band.mqtt_module.connection,
@@ -282,7 +254,7 @@ static void handle_state_subscribed(void)
                                     MQTT_BAND_OUTPUT_BUFFER_SIZE,
                                     band.band_id);
                                     
-    snprintf(band.topic_buffer, MQTT_BAND_TOPIC_MAX_LENGTH, "%s", MQTT_BAND_CMD_TOPIC_BAND_REGISTRATION);
+    snprintf(band.topic_buffer, MQTT_BAND_TOPIC_MAX_LENGTH, "%s", MQTT_BAND_TOPIC_BAND_REGISTRATION);
     publish(band.topic_buffer, band.output_buffer);
     
     leds_off(LEDS_ALL);
@@ -294,7 +266,7 @@ static void handle_state_subscribed(void)
 /*---------------------------------------------------------------------------*/
 static void handle_button_press(button_hal_button_t *button)
 {
-	snprintf(band.topic_buffer, MQTT_BAND_TOPIC_MAX_LENGTH, MQTT_BAND_CMD_TOPIC_STATUS, band.band_id);
+	snprintf(band.topic_buffer, MQTT_BAND_TOPIC_MAX_LENGTH, MQTT_BAND_TOPIC_STATUS, band.band_id);
 
     if (band.state == MQTT_BAND_STATE_INACTIVE) {
         LOG_INFO("Band %s activated.\n", band.band_id);
@@ -352,17 +324,22 @@ static void handle_state_active()
  							respiration,
  							heart_rate);						
  							
- 	snprintf(band.topic_buffer, MQTT_BAND_TOPIC_MAX_LENGTH, MQTT_BAND_TELEMETRY_TOPIC_BAND_SAMPLE, band.band_id);
+ 	snprintf(band.topic_buffer, MQTT_BAND_TOPIC_MAX_LENGTH, MQTT_BAND_TOPIC_BAND_SAMPLE, band.band_id);
  	publish(band.topic_buffer, band.output_buffer);
   
   	// Check if battery level low
     if(band.battery_level < BATTERY_LEVEL_LOW) {
-   		//bool alarm_state_changed;
     	LOG_INFO("Alarming Battery Level too low: %d. Sensors stopped, recharge the band\n", band.battery_level);
-    	//snprintf(band.topic_buffer, MQTT_BAND_TOPIC_MAX_LENGTH, MQTT_BAND_TELEMETRY_TOPIC_BAND_SAMPLE, band.band_id);
- 		//publish(band.topic_buffer, band.output_buffer);
+    	leds_on(LEDS_ALL);
     	band.state = MQTT_BAND_STATE_BATTERY_LOW;
     }
+}
+
+/*---------------------------------------------------------------------------*/
+static void handle_state_inactive()
+{
+	band.battery_level += 3;
+	if (band.battery_level > 100) band.battery_level = 100;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -427,6 +404,9 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
             }
 			if (band.state == MQTT_BAND_STATE_ACTIVE) {
 				handle_state_active();
+			}
+			if (band.state == MQTT_BAND_STATE_INACTIVE) {
+				handle_state_inactive();
 			}
 			if (band.state == MQTT_BAND_STATE_ALERT_ON) {
 				handle_state_alert_on();
