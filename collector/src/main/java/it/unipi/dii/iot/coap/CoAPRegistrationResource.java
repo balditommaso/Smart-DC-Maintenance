@@ -51,7 +51,7 @@ public class CoAPRegistrationResource extends CoapResource {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        mySQLManager.insertRackSensor(rackSensor);
+        // mySQLManager.insertRackSensor(rackSensor);
         System.out.println("Check if already active");
         if (!activeResources.containsKey(rackSensor.getRackSensorId())) {
             System.out.println("active observing");
