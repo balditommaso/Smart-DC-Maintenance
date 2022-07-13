@@ -5,7 +5,10 @@ import com.google.gson.stream.JsonReader;
 import it.unipi.dii.iot.model.RackSensor;
 import it.unipi.dii.iot.persistence.MySQLDriver;
 import it.unipi.dii.iot.persistence.MySQLManager;
+import org.eclipse.californium.core.CoapClient;
+import org.eclipse.californium.core.CoapHandler;
 import org.eclipse.californium.core.CoapResource;
+import org.eclipse.californium.core.CoapResponse;
 import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Response;
@@ -17,12 +20,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 
-public class CoAPRegistrationResource extends CoapResource {
+public class CoAPHandleResource extends CoapResource {
 
      private MySQLManager mySQLManager;
      private static HashMap<String, ArrayList<Object>> activeResources;
 
-    public CoAPRegistrationResource(String name) {
+    public CoAPHandleResource(String name) {
         super(name);
         activeResources = new HashMap<>();
         try {
@@ -70,5 +73,25 @@ public class CoAPRegistrationResource extends CoapResource {
     public static void removeResource(RackSensor rack) {
         activeResources.remove(rack.getRackSensorId());
         System.out.printf("INFO: Removed the resource %s\n", rack.getRackSensorId());
+    }
+
+    public static void setResourceAlarm(CoapClient resource, boolean mode) {
+        if (resource == null)
+            return;
+        String message = "alarm=" + (mode ? "ON" : "OFF");
+        resource.put(new CoapHandler() {
+            @Override
+            public void onLoad(CoapResponse coapResponse) {
+                if (coapResponse != null) {
+                    if(!coapResponse.isSuccess())
+                        System.out.printf("ERROR: Cannot send the PUT request to %s\n", resource.getURI());
+                }
+            }
+
+            @Override
+            public void onError() {
+                System.out.printf("ERROR: Cannot contact %s\n", resource.getURI());
+            }
+        }, message, MediaTypeRegistry.TEXT_PLAIN);
     }
 }

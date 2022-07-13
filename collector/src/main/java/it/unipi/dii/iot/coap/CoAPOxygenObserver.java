@@ -11,9 +11,6 @@ import org.eclipse.californium.core.CoapClient;
 import org.eclipse.californium.core.CoapHandler;
 import org.eclipse.californium.core.CoapObserveRelation;
 import org.eclipse.californium.core.CoapResponse;
-import org.eclipse.californium.core.coap.CoAP;
-import org.eclipse.californium.core.coap.MediaTypeRegistry;
-import org.eclipse.californium.core.coap.Request;
 
 import java.io.StringReader;
 import java.sql.SQLException;
@@ -68,15 +65,14 @@ public class CoAPOxygenObserver {
                             System.out.printf("INFO: activating alarm to %s\n", rack.getRackSensorId());
                             rack.setAlarm(true);
                             mySQLManager.updateRackSensor(rack);
-                            //TODO
-                            setAlarm(true);
+                            CoAPHandleResource.setResourceAlarm(client, true);
                         } else if ((sample.getValue() > lowerBound && sample.getValue() < upperBound)
                                 && rack.getAlarm()) {
                             // reset alarm
                             System.out.printf("INFO: deactivating alarm to %s\n", rack.getRackSensorId());
                             rack.setAlarm(false);
                             mySQLManager.updateRackSensor(rack);
-                            setAlarm(false);
+                            CoAPHandleResource.setResourceAlarm(client, false);
                         }
                     }
 
@@ -89,29 +85,9 @@ public class CoAPOxygenObserver {
         );
     }
 
-    public void setAlarm(boolean mode) {
-        if (client == null)
-            return;
-        String message = "alarm=" + (mode ? "ON" : "OFF");
-        client.put(new CoapHandler() {
-            @Override
-            public void onLoad(CoapResponse coapResponse) {
-                if (coapResponse != null) {
-                    if(!coapResponse.isSuccess())
-                        System.out.printf("ERROR: Cannot send the PUT request to %s\n", rack.getRackSensorId());
-                }
-            }
-
-            @Override
-            public void onError() {
-                System.out.printf("ERROR: Cannot contact %s\n", client.getURI());
-            }
-        }, message, MediaTypeRegistry.TEXT_PLAIN);
-    }
-
     public void stopObservingResource() {
         relation.proactiveCancel();
-        CoAPRegistrationResource.removeResource(rack);
+        CoAPHandleResource.removeResource(rack);
     }
 }
 
