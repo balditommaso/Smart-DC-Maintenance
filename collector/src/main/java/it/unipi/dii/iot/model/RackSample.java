@@ -5,14 +5,14 @@ import java.sql.Timestamp;
 public class RackSample {
     private String rackSensorId;
     private Timestamp timestamp;
-    private int temperature;
-    private int humidity;
+    private String measure;
+    private int value;
 
-    public RackSample(String rackSensorId, Timestamp timestamp, int temperature, int humidity) {
+    public RackSample(String rackSensorId, Timestamp timestamp, String measure, int value) {
         this.rackSensorId = rackSensorId;
         this.timestamp = timestamp;
-        this.temperature = temperature;
-        this.humidity = humidity;
+        this.measure = measure;
+        this.value = value;
     }
 
     public String getRackSensorId() {
@@ -31,19 +31,20 @@ public class RackSample {
         this.timestamp = timestamp;
     }
 
-    public int getTemperature() {
-        return temperature;
+    public String getMeasure() {
+        return measure;
     }
 
-    public void setTemperature(int temperature) {
-        this.temperature = temperature;
+    public void setMeasure(String measure) {
+        this.measure = measure;
     }
 
-    public int getHumidity() {
-        return humidity;
+    public int getValue() {
+        return value;
     }
 
-    public void setHumidity(int humidity) {
-        this.humidity = humidity;
+    public void setValue(int value) {
+        this.value = value;
     }
 }
+

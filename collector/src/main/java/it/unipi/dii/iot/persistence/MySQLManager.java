@@ -2,6 +2,7 @@ package it.unipi.dii.iot.persistence;
 
 import it.unipi.dii.iot.model.BandDevice;
 import it.unipi.dii.iot.model.BandSample;
+import it.unipi.dii.iot.model.RackSample;
 import it.unipi.dii.iot.model.RackSensor;
 
 import java.sql.Connection;
@@ -75,7 +76,7 @@ public class MySQLManager {
         }
     }
 
-    public void insertSensor (RackSensor rack) {
+    public void insertRackSensor (RackSensor rack) {
         try (
                 PreparedStatement statement = connection.prepareStatement("INSERT INTO rack_sensor (idSensor, alarm) VALUES (?, ?)")
         ){
@@ -84,7 +85,44 @@ public class MySQLManager {
             statement.executeUpdate();
         }
         catch (final SQLIntegrityConstraintViolationException e) {
-            System.out.printf("INFO: band device %s already registered in the database.%n", rack.getRackSensorId());
+            System.out.printf("INFO: rack sensor %s already registered in the database.%n", rack.getRackSensorId());
+        }
+        catch (final SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public int updateRackSensor (RackSensor rackSensor) {
+        try (
+                PreparedStatement statement = connection.prepareStatement("UPDATE rack_sensor SET alarm = ? WHERE idsensor = ?")
+        ){
+            statement.setBoolean(1, rackSensor.getAlarm());
+            statement.setString(2, rackSensor.getRackSensorId());
+
+            if (statement.executeUpdate() != 1) throw new Exception("ERROR: not valid id " + rackSensor.getRackSensorId());
+        }
+        catch (final SQLException e) {
+            e.printStackTrace();
+            return -1;
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            return 1;
+        }
+        return 0;
+    }
+
+    public void insertRackSensorSample (RackSample sample) {
+        try (
+                PreparedStatement statement = connection.prepareStatement("INSERT INTO rack_samples "
+                        + "(idSensor, timestamp, measure, value) VALUES (?, ?, ?, ?)")
+        ){
+            statement.setString(1, sample.getRackSensorId());
+            statement.setTimestamp(2, sample.getTimestamp());
+            statement.setString(3, sample.getMeasure());
+            statement.setInt(4, sample.getValue());
+
+            statement.executeUpdate();
+
         }
         catch (final SQLException e) {
             e.printStackTrace();
