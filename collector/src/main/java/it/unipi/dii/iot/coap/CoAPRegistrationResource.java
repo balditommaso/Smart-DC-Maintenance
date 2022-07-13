@@ -46,7 +46,7 @@ public class CoAPRegistrationResource extends CoapResource {
 
         // rispondi
         response.getOptions().setContentFormat(MediaTypeRegistry.APPLICATION_JSON);
-        response.setPayload("{ \"registration\": \"success\"}");
+        response.setPayload("{ \"registration\": 1}");
         exchange.respond(response);
     }
 }
