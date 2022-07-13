@@ -17,7 +17,7 @@ public class RackSensor {
         this.rackSensorId = rackSensorId;
     }
 
-    public boolean isAlarm() {
+    public boolean getAlarm() {
         return alarm;
     }
 
