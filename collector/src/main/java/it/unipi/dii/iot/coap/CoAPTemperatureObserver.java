@@ -32,8 +32,8 @@ public class CoAPTemperatureObserver {
         upperBound = configParameters.getTemperatureUpperBound();
         lowerBound = configParameters.getTemperatureLowerBound();
 
-        System.out.println("coap://[" + rack.getRackSensorId() + "]/" + configParameters.getTemperatureResource());
-        client = new CoapClient("coap://[" + rack.getRackSensorId() + "]/" + configParameters.getTemperatureResource());
+        //System.out.println("coap://[" + rack.getRackSensorId() + "]/" + configParameters.getTemperatureResource());
+        client = new CoapClient("coap://[" + rack.getRackSensorId() + "]:5683/" + configParameters.getTemperatureResource());
 
         try {
             mySQLManager = new MySQLManager(MySQLDriver.getConnection());
