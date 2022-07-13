@@ -4,7 +4,7 @@ public class RackSensor {
     private String rackSensorId;
     private boolean alarm;
 
-    public RackSensor(String rackSensorId, String sensorType, boolean alarm) {
+    public RackSensor(String rackSensorId, boolean alarm) {
         this.rackSensorId = rackSensorId;
         this.alarm = alarm;
     }
