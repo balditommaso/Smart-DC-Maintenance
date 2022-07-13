@@ -29,15 +29,9 @@
 
 struct coap_rack {
     char rack_id[COAP_ID_LENGTH];
-    bool alarm;                         // verifica se necessario
     clock_time_t state_check_interval;
     struct etimer state_check_timer;
     uint8_t state;
-
-    // struct coap_client {
-    //    coap_endpoint_t server_endpoint;
-    //    coap_message_t request[1];
-    //} coap_client;
 };
 
 
@@ -50,7 +44,6 @@ static struct coap_rack rack;
 
 static void init_rack_state()
 {
-    rack.alarm = false;
     rack.state_check_interval = COAP_STATE_CHECK_INTERVAL * CLOCK_SECOND;
     rack.state = COAP_STATE_INIT;
     etimer_set(&rack.state_check_timer, rack.state_check_interval);
@@ -70,25 +63,7 @@ void client_chunk_handler(coap_message_t *response)
         rack.state = COAP_STATE_ACTIVE;
 }
 
-/* static void handle_rack_registration() 
-{
-    char url[COAP_URL_SIZE];
-    sprintf(url, "coap://[%s]:%d", SERVER_IP, SERVER_PORT);
-    LOG_INFO("Try to register to %s\n", url);
-
-    coap_endpoint_parse(url, strlen(url), &server_endpoint);       // TODO: ask edo if we need to separate this part
-    // prepare the message
-    char message[COAP_CHUNK_SIZE];
-    set_json_msg_sensor_registration(message, COAP_CHUNK_SIZE, rack.rack_id, RACK_SENSOR);
-    coap_init_message(request, COAP_TYPE_CON, COAP_POST, 0);
-    coap_set_header_uri_path(request, SERVER_SERVICE);
-    coap_set_payload(request, (uint8_t*)message, sizeof(message)-1);
-
-    // send request of registration
-    COAP_BLOCKING_REQUEST(&server_endpoint, request, client_chunk_handler);
-}
-*/
-static bool is_connected() 
+static void is_connected() 
 {
     if (NETSTACK_ROUTING.node_is_reachable()) 
     {
@@ -96,10 +71,13 @@ static bool is_connected()
         uiplib_ipaddr_snprint(rack.rack_id,
                             COAP_ID_LENGTH,
                             &(uip_ds6_get_global(ADDR_PREFERRED)->ipaddr));
-        return true;
+        rack.state = COAP_STATE_NETWORK_OK;
     }
-    LOG_INFO("Waiting for connection with the Border Router\n");
-    return false;
+    else 
+    {
+        LOG_INFO("Waiting for connection with the Border Router\n");
+    }
+    
 }
 
 static void finish_rack() 
@@ -112,11 +90,12 @@ extern coap_resource_t res_temperature/*, res_humidity*/;
 PROCESS_THREAD(contiki_coap_server, ev, data) 
 {
     // init the rack state
-    init_rack_state();
+    
 
     PROCESS_BEGIN();
     LOG_INFO("Process Started");
     // rack sensor not active yet
+    init_rack_state();
     leds_single_on(LEDS_RED);
     PROCESS_PAUSE();
 
@@ -126,49 +105,51 @@ PROCESS_THREAD(contiki_coap_server, ev, data)
     // coap_activate_resource(&res_humidity, COAP_HUMIDITY_PATH);
     static coap_endpoint_t server_endpoint;
     static coap_message_t request[1];
-    // TODO
+
     while(1) 
     {
         PROCESS_YIELD();
         if ((ev == PROCESS_EVENT_TIMER && data == &rack.state_check_timer) || 
             (ev == PROCESS_EVENT_POLL))
         {
-            switch (rack.state)
+            if (rack.state == COAP_STATE_INIT)
             {
-                case COAP_STATE_INIT: 
-                    LOG_INFO("Check connection to the network\n");
-                    if (is_connected())
-                        rack.state = COAP_STATE_NETWORK_OK;
-                    break;
-                case COAP_STATE_NETWORK_OK: 
-                    LOG_INFO("Sending registration message\n");
-                    leds_single_toggle(LEDS_RED);
-                    char url[COAP_URL_SIZE];
-                    sprintf(url, "coap://[%s]:%d", SERVER_IP, SERVER_PORT);
-                    LOG_INFO("Try to register to %s\n", url);
-
-                    coap_endpoint_parse(url, strlen(url), &server_endpoint);       // TODO: ask edo if we need to separate this part
-                    // prepare the message
-                    char message[COAP_CHUNK_SIZE];
-                    set_json_msg_sensor_registration(message, COAP_CHUNK_SIZE, rack.rack_id, RACK_SENSOR);
-                    coap_init_message(request, COAP_TYPE_CON, COAP_POST, 0);
-                    coap_set_header_uri_path(request, SERVER_SERVICE);
-                    coap_set_payload(request, (uint8_t*)message, sizeof(message)-1);
-
-                    // send request of registration
-                    COAP_BLOCKING_REQUEST(&server_endpoint, request, client_chunk_handler);
-                    //handle_rack_registration();
-                    break;
-                case COAP_STATE_ACTIVE: 
-                    LOG_INFO("Sending data\n");
-                    leds_single_off(LEDS_RED);
-                    leds_single_on(LEDS_GREEN);
-                    res_temperature.trigger();
-                    // res_humidity.trigger();
-                    break;
-                default:
-                    LOG_ERR("ERROR: Invalid state");
+                LOG_INFO("State %d: Check connection to the network\n", rack.state);
+                is_connected();
             }
+            else if (rack.state == COAP_STATE_NETWORK_OK)
+            {
+                LOG_INFO("Sending registration message\n");
+                leds_single_toggle(LEDS_RED);
+                char url[COAP_URL_SIZE];
+                sprintf(url, "coap://[%s]:%d", SERVER_IP, SERVER_PORT);
+                LOG_INFO("Try to register to %s\n", url);
+
+                coap_endpoint_parse(url, strlen(url), &server_endpoint);       // TODO: ask edo if we need to separate this part
+                // prepare the message
+                char message[COAP_CHUNK_SIZE];
+                set_json_msg_sensor_registration(message, COAP_CHUNK_SIZE, rack.rack_id, RACK_SENSOR);
+                coap_init_message(request, COAP_TYPE_CON, COAP_POST, 0);
+                coap_set_header_uri_path(request, SERVER_SERVICE);
+                coap_set_header_content_format(request, APPLICATION_JSON);
+                coap_set_payload(request, (uint8_t*)message, sizeof(message)-1);
+
+                // send request of registration
+                COAP_BLOCKING_REQUEST(&server_endpoint, request, client_chunk_handler);
+            }
+            else if (rack.state == COAP_STATE_ACTIVE)
+            {
+                LOG_INFO("Sending data\n");
+                leds_single_off(LEDS_RED);
+                leds_single_on(LEDS_GREEN);
+                res_temperature.trigger();
+                // res_humidity.trigger();
+            }
+            else
+            {
+                LOG_ERR("ERROR: Invalid state");
+            }
+            etimer_reset(&rack.state_check_timer);  
         }
         // if i press the button i fix the problem so  have to tell at the server to 
         // reset the alarm

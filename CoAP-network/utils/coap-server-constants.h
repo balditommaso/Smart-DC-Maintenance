@@ -15,8 +15,9 @@
 
 /* COAP internal states. */
 #define COAP_STATE_INIT                       		 0 /* Initial state. */
-#define COAP_STATE_NETWORK_OK		                 1 /* Network is initialized. */
-#define COAP_STATE_ACTIVE                     		 2 /* Band weared. */
+#define COAP_CHECK_CONNCTION                         1
+#define COAP_STATE_NETWORK_OK		                 2 /* Network is initialized. */
+#define COAP_STATE_ACTIVE                     		 3 /* Band weared. */
 
 /* COAP resources path */
 #define COAP_TEMPERATURE_PATH               "rack/temperature"
