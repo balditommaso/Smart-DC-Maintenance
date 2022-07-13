@@ -68,10 +68,9 @@ public class CoAPOxygenObserver {
                             System.out.printf("INFO: activating alarm to %s\n", rack.getRackSensorId());
                             rack.setAlarm(true);
                             mySQLManager.updateRackSensor(rack);
+                            //TODO
                             try {
-                                Request request = new Request(CoAP.Code.PUT);
-                                request.getOptions().addUriQuery("alarm=1");
-                                client.advanced(request);
+                                client.put("value=1", MediaTypeRegistry.TEXT_PLAIN);
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
@@ -82,9 +81,7 @@ public class CoAPOxygenObserver {
                             rack.setAlarm(false);
                             mySQLManager.updateRackSensor(rack);
                             try {
-                                Request request = new Request(CoAP.Code.PUT);
-                                request.getOptions().addUriQuery("alarm=0");
-                                client.advanced(request);
+                                client.put("value=0", MediaTypeRegistry.TEXT_PLAIN);
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
