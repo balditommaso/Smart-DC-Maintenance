@@ -11,7 +11,9 @@ import org.eclipse.californium.core.CoapClient;
 import org.eclipse.californium.core.CoapHandler;
 import org.eclipse.californium.core.CoapObserveRelation;
 import org.eclipse.californium.core.CoapResponse;
+import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
+import org.eclipse.californium.core.coap.Request;
 
 import java.io.StringReader;
 import java.sql.SQLException;
@@ -66,23 +68,18 @@ public class CoAPOxygenObserver {
                             System.out.printf("INFO: activating alarm to %s\n", rack.getRackSensorId());
                             rack.setAlarm(true);
                             mySQLManager.updateRackSensor(rack);
-
-                            try {
-                                client.put("{ \"alarm\": 1}", MediaTypeRegistry.APPLICATION_JSON);
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
+                            Request request = new Request(CoAP.Code.PUT);
+                            request.getOptions().addUriQuery("alarm=1");
+                            client.advanced(request);
                         } else if ((sample.getValue() > lowerBound && sample.getValue() < upperBound)
                                 && rack.getAlarm()) {
                             // reset alarm
                             System.out.printf("INFO: deactivating alarm to %s\n", rack.getRackSensorId());
                             rack.setAlarm(false);
                             mySQLManager.updateRackSensor(rack);
-                            try {
-                                client.put("{ \"alarm\": 0}", MediaTypeRegistry.APPLICATION_JSON);
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
+                            Request request = new Request(CoAP.Code.PUT);
+                            request.getOptions().addUriQuery("alarm=0");
+                            client.advanced(request);
                         }
                     }
 
