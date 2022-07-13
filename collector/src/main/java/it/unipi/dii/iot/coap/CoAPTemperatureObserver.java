@@ -89,6 +89,6 @@ public class CoAPTemperatureObserver {
                     }
                 }
         );
-        relation.proactiveCancel();
+        //relation.proactiveCancel();
     }
 }
