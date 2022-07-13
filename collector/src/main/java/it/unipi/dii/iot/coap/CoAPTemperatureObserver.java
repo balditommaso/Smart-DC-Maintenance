@@ -1,24 +1,17 @@
 package it.unipi.dii.iot.coap;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 import it.unipi.dii.iot.config.ConfigParameters;
-import it.unipi.dii.iot.model.BandSample;
 import it.unipi.dii.iot.model.RackSample;
 import it.unipi.dii.iot.model.RackSensor;
-import it.unipi.dii.iot.mqtt.Topic;
 import it.unipi.dii.iot.persistence.MySQLDriver;
 import it.unipi.dii.iot.persistence.MySQLManager;
 import org.eclipse.californium.core.CoapClient;
 import org.eclipse.californium.core.CoapHandler;
 import org.eclipse.californium.core.CoapObserveRelation;
 import org.eclipse.californium.core.CoapResponse;
-import org.eclipse.californium.core.coap.CoAP;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
-import org.eclipse.californium.core.coap.Option;
-import org.eclipse.californium.core.coap.Request;
 
 import java.io.StringReader;
 import java.sql.SQLException;
@@ -72,14 +65,21 @@ public class CoAPTemperatureObserver {
                             rack.setAlarm(true);
                             mySQLManager.updateRackSensor(rack);
 
-                            client.put("{ \"registration\": 1}", MediaTypeRegistry.APPLICATION_JSON);
+                            try {
+                                client.put("{ \"registration\": 1}", MediaTypeRegistry.APPLICATION_JSON);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
                         } else if ((rackSample.getValue() >= lowerBound && rackSample.getValue() <= upperBound)
                                     && rack.getAlarm()) {
                             // reset alarm
                             rack.setAlarm(false);
                             mySQLManager.updateRackSensor(rack);
-
-                            client.put("{ \"registration\": 0}", MediaTypeRegistry.APPLICATION_JSON);
+                            try {
+                                client.put("{ \"registration\": 0}", MediaTypeRegistry.APPLICATION_JSON);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
 
