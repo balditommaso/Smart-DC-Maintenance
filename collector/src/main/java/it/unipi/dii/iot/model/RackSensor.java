@@ -24,4 +24,12 @@ public class RackSensor {
     public void setAlarm(boolean alarm) {
         this.alarm = alarm;
     }
+
+    @Override
+    public String toString() {
+        return "RackSensor{" +
+                "rackSensorId='" + rackSensorId + '\'' +
+                ", alarm=" + alarm +
+                '}';
+    }
 }
