@@ -3,8 +3,8 @@ package it.unipi.dii.iot.coap;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 import it.unipi.dii.iot.config.ConfigParameters;
+import it.unipi.dii.iot.model.HumiditySample;
 import it.unipi.dii.iot.model.RackSensor;
-import it.unipi.dii.iot.model.TemperatureSample;
 import it.unipi.dii.iot.persistence.MySQLDriver;
 import it.unipi.dii.iot.persistence.MySQLManager;
 import org.eclipse.californium.core.CoapClient;
@@ -17,8 +17,7 @@ import java.io.StringReader;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 
-public class CoAPTemperatureObserver {
-
+public class CoAPHumidityObserver {
     private MySQLManager mySQLManager;
     private final CoapClient client;
     private final int upperBound;
@@ -26,13 +25,13 @@ public class CoAPTemperatureObserver {
     private final RackSensor rack;
     private final CoapObserveRelation relation;
 
-    public CoAPTemperatureObserver(RackSensor rack) {
+    public CoAPHumidityObserver(RackSensor rack) {
         ConfigParameters configParameters = new ConfigParameters("config.properties");
-        upperBound = configParameters.getTemperatureUpperBound();
-        lowerBound = configParameters.getTemperatureLowerBound();
+        upperBound = configParameters.getHumidityUpperBound();
+        lowerBound = configParameters.getHumidityLowerBound();
 
         client = new CoapClient("coap://[" + rack.getRackSensorId() + "]:" + configParameters.getCoapPort()
-                + "/" + configParameters.getTemperatureResource());
+                + "/" + configParameters.getHumidityResource());
 
         try {
             mySQLManager = new MySQLManager(MySQLDriver.getConnection());
@@ -41,7 +40,7 @@ public class CoAPTemperatureObserver {
         }
 
         this.rack = rack;
-        System.out.printf("INFO: Start observing temperature of %s\n", rack.getRackSensorId());
+        System.out.printf("INFO: Start observing humidity of %s\n", rack.getRackSensorId());
         relation = client.observe(
                 new CoapHandler() {
                     @Override
@@ -54,12 +53,12 @@ public class CoAPTemperatureObserver {
                         JsonReader reader = new JsonReader(new StringReader(content));
                         reader.setLenient(true);
 
-                        TemperatureSample sample = parser.fromJson(reader, TemperatureSample.class);
+                        HumiditySample sample = parser.fromJson(reader, HumiditySample.class);
                         sample.setId(rack.getRackSensorId());
                         sample.setTimestamp(new Timestamp(System.currentTimeMillis()));
 
                         // ADD to DB
-                        mySQLManager.insertTemperatureSample(sample);
+                        mySQLManager.insertHumiditySample(sample);
                         // verify threshold
                         if ((sample.getValue() <= lowerBound || sample.getValue() >= upperBound)
                                 && !rack.getAlarm()) {
@@ -99,5 +98,3 @@ public class CoAPTemperatureObserver {
         CoAPRegistrationResource.removeResource(rack);
     }
 }
-
-

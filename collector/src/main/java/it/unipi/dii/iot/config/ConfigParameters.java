@@ -34,8 +34,8 @@ public class ConfigParameters {
     private int temperatureUpperBound;
     private int humidityLowerBound;
     private int humidityUpperBound;
-    private double oxygenLowerBound;
-    private double oxygenUpperBound;
+    private float oxygenLowerBound;
+    private float oxygenUpperBound;
 
 
     public ConfigParameters(String configFilePath) {
@@ -64,8 +64,8 @@ public class ConfigParameters {
             temperatureUpperBound = Integer.parseInt(prop.getProperty("temperatureUpperBound"));
             humidityLowerBound = Integer.parseInt(prop.getProperty("humidityLowerBound"));
             humidityUpperBound = Integer.parseInt(prop.getProperty("humidityUpperBound"));
-            oxygenLowerBound = Double.parseDouble(prop.getProperty("oxygenLowerBound"));
-            oxygenUpperBound = Double.parseDouble(prop.getProperty("oxygenUpperBound"));
+            oxygenLowerBound = Float.parseFloat(prop.getProperty("oxygenLowerBound"));
+            oxygenUpperBound = Float.parseFloat(prop.getProperty("oxygenUpperBound"));
 
             oxygenSaturationThreshold = Integer.parseInt(prop.getProperty("oxygenSaturationThreshold"));
             bloodPressureLowerThreshold = Integer.parseInt(prop.getProperty("bloodPressureLowerThreshold")); 
@@ -135,11 +135,11 @@ public class ConfigParameters {
         return humidityUpperBound;
     }
 
-    public double getOxygenLowerBound() {
+    public float getOxygenLowerBound() {
         return oxygenLowerBound;
     }
 
-    public double getOxygenUpperBound() {
+    public float getOxygenUpperBound() {
         return oxygenUpperBound;
     }
 

@@ -2,7 +2,6 @@ package it.unipi.dii.iot.coap;
 
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
-import it.unipi.dii.iot.model.BandDevice;
 import it.unipi.dii.iot.model.RackSensor;
 import it.unipi.dii.iot.persistence.MySQLDriver;
 import it.unipi.dii.iot.persistence.MySQLManager;
@@ -14,13 +13,14 @@ import org.eclipse.californium.core.server.resources.CoapExchange;
 
 import java.io.StringReader;
 import java.sql.SQLException;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashMap;
+
 
 public class CoAPRegistrationResource extends CoapResource {
 
      private MySQLManager mySQLManager;
-     private static HashMap<String, CoAPTemperatureObserver> activeResources;
+     private static HashMap<String, ArrayList<Object>> activeResources;
 
     public CoAPRegistrationResource(String name) {
         super(name);
@@ -32,15 +32,10 @@ public class CoAPRegistrationResource extends CoapResource {
         }
     }
 
-    public CoAPRegistrationResource(String name, boolean visible) {
-        super(name, visible);
-    }
-
     public void handlePOST(CoapExchange exchange) {
         Response response = new Response(CoAP.ResponseCode.CONTINUE);
         System.out.println("Coap registration request: " + new String(exchange.getRequestPayload()));
 
-        // aggiungi al DB
         Gson parser = new Gson();
         String payload = new String(exchange.getRequestPayload());
         JsonReader reader = new JsonReader(new StringReader(payload));
@@ -52,12 +47,19 @@ public class CoAPRegistrationResource extends CoapResource {
             e.printStackTrace();
         }
 
+        if (rackSensor == null) {
+            System.err.println("ERROR: Not valid object.");
+            System.exit(1);
+        }
+
         mySQLManager.insertRackSensor(rackSensor);
         System.out.println("Check if already active");
         if (!activeResources.containsKey(rackSensor.getRackSensorId())) {
-            System.out.println("active observing");
-            CoAPTemperatureObserver temperatureObserver = new CoAPTemperatureObserver(rackSensor);
-            activeResources.put(rackSensor.getRackSensorId(), temperatureObserver);
+            ArrayList<Object> resources = new ArrayList<>();
+            resources.add(new CoAPTemperatureObserver(rackSensor));
+            resources.add(new CoAPHumidityObserver(rackSensor));
+            resources.add(new CoAPOxygenObserver(rackSensor));
+            activeResources.put(rackSensor.getRackSensorId(), resources);
         }
 
         response.getOptions().setContentFormat(MediaTypeRegistry.APPLICATION_JSON);
