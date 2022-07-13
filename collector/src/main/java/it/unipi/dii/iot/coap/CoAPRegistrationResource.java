@@ -55,7 +55,9 @@ public class CoAPRegistrationResource extends CoapResource {
         mySQLManager.insertRackSensor(rackSensor);
 
         if (!activeResources.containsKey(rackSensor.getRackSensorId())) {
-            activeResources.put(rackSensor.getRackSensorId(), new CoAPTemperatureObserver(rackSensor));
+            System.out.println("active observing");
+            CoAPTemperatureObserver temperatureObserver = new CoAPTemperatureObserver(rackSensor);
+            activeResources.put(rackSensor.getRackSensorId(), temperatureObserver);
         }
 
         // rispondi
