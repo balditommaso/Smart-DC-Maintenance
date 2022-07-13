@@ -77,7 +77,7 @@ public class MySQLManager {
 
     public void insertSensor (RackSensor rack) {
         try (
-                PreparedStatement statement = connection.prepareStatement("INSERT INTO rack_sensor (idSensor, alarm) VALUES (?, ?, ?)")
+                PreparedStatement statement = connection.prepareStatement("INSERT INTO rack_sensor (idSensor, alarm) VALUES (?, ?)")
         ){
             statement.setString(1, rack.getRackSensorId());
             statement.setBoolean(2, rack.isAlarm());
