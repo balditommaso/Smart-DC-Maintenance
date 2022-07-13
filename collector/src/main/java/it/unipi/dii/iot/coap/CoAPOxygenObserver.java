@@ -92,7 +92,7 @@ public class CoAPOxygenObserver {
     public void setAlarm(boolean mode) {
         if (client == null)
             return;
-        String message = "alarm=" + (mode ? 1 : 0);
+        String message = "alarm=" + (mode ? "ON" : "OFF");
         client.put(new CoapHandler() {
             @Override
             public void onLoad(CoapResponse coapResponse) {
