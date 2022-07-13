@@ -1,6 +1,7 @@
 package it.unipi.dii.iot.coap;
 
 import com.google.gson.Gson;
+import com.google.gson.stream.JsonReader;
 import it.unipi.dii.iot.model.BandDevice;
 import it.unipi.dii.iot.model.RackSensor;
 import it.unipi.dii.iot.persistence.MySQLDriver;
@@ -11,6 +12,7 @@ import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.Response;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 
+import java.io.StringReader;
 import java.sql.SQLException;
 import java.util.Arrays;
 
@@ -38,9 +40,11 @@ public class CoAPRegistrationResource extends CoapResource {
         // aggiungi al DB
         Gson parser = new Gson();
         String payload = new String(exchange.getRequestPayload());
+        JsonReader reader = new JsonReader(new StringReader(payload));
+        reader.setLenient(true);
         RackSensor rackSensor = null;
         try {
-            rackSensor = parser.fromJson(payload, RackSensor.class);
+            rackSensor = parser.fromJson(reader, RackSensor.class);
         } catch (Exception e) {
             e.printStackTrace();
         }
