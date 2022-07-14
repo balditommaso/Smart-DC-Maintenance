@@ -21,7 +21,7 @@ static bool active = false;
 
 static void ventilation_put_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
 
-RESOURCE(res_ventilation,
+RESOURCE(res_dehumidifier,
             "title=\"ventilation\";rt=\"Text\" POST/PUT value=<value>;obs",
                 NULL,
                 NULL,
