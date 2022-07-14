@@ -104,7 +104,7 @@ public class MySQLManager {
     public void insertTemperatureSample (TemperatureSample sample) {
         try (
                 PreparedStatement statement = connection.prepareStatement("INSERT INTO temperature_samples "
-                        + "(idSensor, timestamp, value) VALUES (?, NULL, ?)")
+                        + "(idSensor, value) VALUES (?, ?)")
         ){
             statement.setString(1, sample.getId());
             statement.setInt(2, sample.getValue());
@@ -120,7 +120,7 @@ public class MySQLManager {
     public void insertHumiditySample (HumiditySample sample) {
         try (
                 PreparedStatement statement = connection.prepareStatement("INSERT INTO humidity_samples "
-                        + "(idSensor, timestamp, value) VALUES (?, NULL, ?)")
+                        + "(idSensor, value) VALUES (?, ?)")
         ){
             statement.setString(1, sample.getId());
             statement.setInt(2, sample.getValue());
@@ -136,7 +136,7 @@ public class MySQLManager {
     public void insertOxygenSample (OxygenSample sample) {
         try (
                 PreparedStatement statement = connection.prepareStatement("INSERT INTO oxygen_samples "
-                        + "(idSensor, timestamp, value) VALUES (?, NULL, ?)")
+                        + "(idSensor, value) VALUES (?, ?)")
         ){
             statement.setString(1, sample.getId());
             statement.setFloat(2, sample.getValue());
