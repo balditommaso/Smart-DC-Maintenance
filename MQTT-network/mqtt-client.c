@@ -312,10 +312,10 @@ static void handle_state_active()
 	band.battery_level -= 1;
  	int oxygen_saturation = get_oxygen_saturation();
  	int blood_pressure = get_blood_pressure();
-  	double	temperature = get_temperature();
+  	int temperature = get_temperature();
   	int respiration = get_respiration();
  	int heart_rate = get_heart_rate();
- 	
+
  	set_json_msg_band_sample(band.output_buffer, MQTT_BAND_OUTPUT_BUFFER_SIZE, 
  							band.battery_level,
  							oxygen_saturation, 
@@ -414,7 +414,6 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
 			if (band.state == MQTT_BAND_STATE_DISCONNECTED) {
 				LOG_ERR("Disconnected form MQTT broker\n");	
 				band.state = MQTT_BAND_STATE_INIT;
-     			  break;
 			}
 			etimer_reset(&band.state_check_timer);
 			continue;

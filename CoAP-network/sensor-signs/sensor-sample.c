@@ -40,7 +40,7 @@ int get_humidity(int last_sample, bool alarm)
     return generate_sample(last_sample, alarm, HUMIDITY_LOWER_BOUND, HUMIDITY_UPPER_BOUND, HUMIDITY_GOOD_VALUE);
 }
 
-float get_oxygen_level(float last_sample, bool alarm)
+float get_oxygen_level(int last_sample, bool alarm)
 {
     int variation = rand() % 16;
     float new_sample;
@@ -55,5 +55,5 @@ float get_oxygen_level(float last_sample, bool alarm)
     if (new_sample < OXYGEN_LOWER_BOUND)
         new_sample = OXYGEN_LOWER_BOUND;
 
-    return new_sample; 
+    return new_sample * 10;     // contiki does not support floating point 
 }

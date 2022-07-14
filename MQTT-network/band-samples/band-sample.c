@@ -11,12 +11,12 @@ void init_sample_values()
 	last_sample.heart_rate = HEART_RATE_INIT;
 }
 
-double generate_sample(double last_sample, double max_deviation, double lower_bound, double upper_bound)
+double generate_sample(int last_sample, int max_deviation, int lower_bound, int upper_bound)
 {
-  double deviation, new_sample;
+  int deviation, new_sample;
 
-  double min = -1.0*max_deviation;
-  double max = max_deviation;
+  int min = -1*max_deviation;
+  int max = max_deviation;
   
   
   deviation = ((max-min)*rand())/RAND_MAX + min;
@@ -53,13 +53,12 @@ int get_blood_pressure()
 	return blood_pressure_sample;
 }
 
-double get_temperature()
+int get_temperature()
 {
-	double temperature_sample = generate_sample(last_sample.temperature,
+	int temperature_sample = generate_sample(last_sample.temperature,
 												TEMPERATURE_DEVIATION,
 												TEMPERATURE_LOWER_BOUND,
 												TEMPERATURE_UPPER_BOUND);
-	temperature_sample = roundf(temperature_sample * 10) / 10;	// 1 decimal place
 	last_sample.temperature = temperature_sample;
 	return temperature_sample;
 }

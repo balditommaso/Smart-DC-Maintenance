@@ -5,7 +5,7 @@
 struct band_sample {
 	int oxygen_saturation;
 	int blood_pressure;
-	double	temperature;
+	int temperature;
 	int respiration;
 	int heart_rate;
 };
@@ -16,7 +16,7 @@ int get_oxygen_saturation();
 
 int get_blood_pressure();
 
-double get_temperature();
+int get_temperature();
 
 int get_respiration();
 

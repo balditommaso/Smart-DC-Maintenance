@@ -13,13 +13,13 @@ public class BandSample {
 	private int heartRate;
 	
 	public BandSample(String bandId, Timestamp timestamp, int batteryLevel, int oxygenSaturation,
-			int bloodPressure, double temperature, int respiration, int heartRate) {
+			int bloodPressure, int temperature, int respiration, int heartRate) {
 		this.bandId = bandId;
 		this.timestamp = timestamp;
 		this.batteryLevel = batteryLevel;
 		this.oxygenSaturation = oxygenSaturation;
 		this.bloodPressure = bloodPressure;
-		this.temperature = temperature;
+		this.temperature = temperature/10.0;
 		this.respiration = respiration;
 		this.heartRate = heartRate;
 	}
@@ -33,6 +33,7 @@ public class BandSample {
 	public int getRespiration() { return respiration; }
 	public int getHeartRate() { return heartRate; }
 	public void setBandId(String bandId) { this.bandId = bandId; }
+	public void setTemperature(double temperature) { this.temperature = temperature; }
 	public void setTimestamp(Timestamp timestamp) { this.timestamp = timestamp; }
 	
 	public String toString() {

@@ -15,16 +15,16 @@
 #include "net/ipv6/uip-debug.h"
 #include "net/routing/routing.h"
 
-#include "./sensor-signs/sensor-sample.h"
-#include "./utils/coap-server-constants.h"
-#include "./utils/json-message.h"
+#include "../sensor-signs/sensor-sample.h"
+#include "../utils/coap-server-constants.h"
+#include "../utils/json-message.h"
 
 #include <stdlib.h>
 #include <string.h>
 
 /* Log configuration */
 #include "sys/log.h"
-#define LOG_MODULE "RACK NODE"
+#define LOG_MODULE "Temperature Node"
 #define LOG_LEVEL LOG_LEVEL_APP
 
 struct coap_rack {
@@ -37,7 +37,7 @@ struct coap_rack {
 
 PROCESS_NAME(contiki_coap_server);
 AUTOSTART_PROCESSES(&contiki_coap_server);
-PROCESS(contiki_coap_server, "CoAP Server");
+PROCESS(contiki_coap_server, "CoAP Temperature");
 
 
 static struct coap_rack rack;
@@ -87,7 +87,7 @@ static void finish_rack()
     etimer_stop(&rack.state_check_timer);
 }
 
-extern coap_resource_t res_temperature, res_humidity, res_oxygen;
+extern coap_resource_t res_temperature, res_ventilation;
 
 PROCESS_THREAD(contiki_coap_server, ev, data) 
 {
@@ -99,8 +99,7 @@ PROCESS_THREAD(contiki_coap_server, ev, data)
     // activate the resource
     LOG_INFO("Starting the rack-sensor CoAP Server\n");
     coap_activate_resource(&res_temperature, COAP_TEMPERATURE_PATH);
-    coap_activate_resource(&res_humidity, COAP_HUMIDITY_PATH);
-    coap_activate_resource(&res_oxygen, COAP_OXYGEN_PATH);
+    coap_activate_resource(&res_ventilation, COAP_VENTILATION_PATH);
 
     static coap_endpoint_t server_endpoint;
     static coap_message_t request[1];
@@ -128,7 +127,7 @@ PROCESS_THREAD(contiki_coap_server, ev, data)
 
                 // prepare the message
                 char message[COAP_CHUNK_SIZE];
-                set_json_msg_sensor_registration(message, COAP_CHUNK_SIZE, rack.rack_id);
+                set_json_msg_sensor_registration(message, COAP_CHUNK_SIZE, rack.rack_id, COAP_TEMPERATURE_PATH);
                 coap_init_message(request, COAP_TYPE_CON, COAP_POST, 0);
                 coap_set_header_uri_path(request, SERVER_SERVICE);
                 coap_set_payload(request, (uint8_t*)message, sizeof(message)-1);
@@ -142,8 +141,6 @@ PROCESS_THREAD(contiki_coap_server, ev, data)
                 leds_single_off(LEDS_RED);
                 leds_single_on(LEDS_GREEN);
                 res_temperature.trigger();
-                res_humidity.trigger();
-                res_oxygen.trigger();
             }
             else
             {

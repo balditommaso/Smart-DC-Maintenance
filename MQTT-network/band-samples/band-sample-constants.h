@@ -14,10 +14,10 @@
 #define BLOOD_PRESSURE_DEVIATION              5
 
 /* Temperature constants */
-#define TEMPERATURE_INIT	                  36.5
-#define TEMPERATURE_LOWER_BOUND               34.0
-#define TEMPERATURE_UPPER_BOUND               42.0
-#define TEMPERATURE_DEVIATION                 0.1
+#define TEMPERATURE_INIT	                  365
+#define TEMPERATURE_LOWER_BOUND               340
+#define TEMPERATURE_UPPER_BOUND               420
+#define TEMPERATURE_DEVIATION                 1
 
 /* Respiration constants */
 #define RESPIRATION_INIT		              20

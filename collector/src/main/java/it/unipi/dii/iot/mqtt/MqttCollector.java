@@ -136,7 +136,7 @@ public class MqttCollector implements MqttCallback {
                 System.exit(-1);
             }
             try {
-            	Thread.sleep(1000 * iter);
+            	//Thread.sleep(iter);
 	            System.out.println("New attempt to connect to the broker...");
 	            mqttClient.connect();
 	            mqttClient.setCallback(this);
@@ -146,7 +146,7 @@ public class MqttCollector implements MqttCallback {
 	            mqttClient.subscribe(Topic.ALL_BANDS_STATUS);
 	            mqttClient.subscribe(Topic.ALL_BANDS_SAMPLES);
 	        }
-	        catch (MqttException | InterruptedException e)
+	        catch (MqttException e)
 	        {
 	            e.printStackTrace();
 	        }
@@ -183,8 +183,7 @@ public class MqttCollector implements MqttCallback {
     		BandSample bandSample = parser.fromJson(payload, BandSample.class);
         	bandSample.setBandId(Topic.getBandId(topic));
         	bandSample.setTimestamp(new Timestamp(System.currentTimeMillis()));
-        	
-        	//if (bandSample.isValid())
+        	bandSample.setTemperature(bandSample.getTemperature()/10.0);
         	mySQLManager.insertBandSample(bandSample);
         	
             logger.log(Level.INFO, "Adding the sample to the local cache.");
