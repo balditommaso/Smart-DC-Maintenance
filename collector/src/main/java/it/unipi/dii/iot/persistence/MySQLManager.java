@@ -111,6 +111,9 @@ public class MySQLManager {
             statement.executeUpdate();
 
         }
+        catch (final SQLIntegrityConstraintViolationException e) {
+            System.out.println("INFO: duplicate message discarded");
+        }
         catch (final SQLException e) {
             e.printStackTrace();
         }
@@ -127,6 +130,9 @@ public class MySQLManager {
             statement.executeUpdate();
 
         }
+        catch (final SQLIntegrityConstraintViolationException e) {
+            System.out.println("INFO: duplicate message discarded");
+        }
         catch (final SQLException e) {
             e.printStackTrace();
         }
@@ -142,6 +148,9 @@ public class MySQLManager {
 
             statement.executeUpdate();
 
+        }
+        catch (final SQLIntegrityConstraintViolationException e) {
+            System.out.println("INFO: duplicate message discarded");
         }
         catch (final SQLException e) {
             e.printStackTrace();
