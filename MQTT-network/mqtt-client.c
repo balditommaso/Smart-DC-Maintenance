@@ -413,6 +413,7 @@ PROCESS_THREAD(mqtt_client_process, ev, data)
 			}
 			if (band.state == MQTT_BAND_STATE_DISCONNECTED) {
 				LOG_ERR("Disconnected form MQTT broker\n");	
+				band.state = MQTT_BAND_STATE_INIT;
      			  break;
 			}
 			etimer_reset(&band.state_check_timer);
