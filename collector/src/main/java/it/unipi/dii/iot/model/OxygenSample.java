@@ -4,13 +4,11 @@ import java.sql.Timestamp;
 
 public class OxygenSample {
     private String id;
-    private Timestamp timestamp;
     private float value;
 
-    public OxygenSample(String id, Timestamp timestamp, int value) {
+    public OxygenSample(String id, int value) {
         this.id = id;
-        this.timestamp = timestamp;
-        this.value = value;
+        this.value = (float) value / 10;
     }
 
     public String getId() {
@@ -19,14 +17,6 @@ public class OxygenSample {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public Timestamp getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(Timestamp timestamp) {
-        this.timestamp = timestamp;
     }
 
     public float getValue() {

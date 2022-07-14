@@ -4,12 +4,10 @@ import java.sql.Timestamp;
 
 public class TemperatureSample {
     private String id;
-    private Timestamp timestamp;
     private int value;
 
-    public TemperatureSample(String id, Timestamp timestamp, int value) {
+    public TemperatureSample(String id, int value) {
         this.id = id;
-        this.timestamp = timestamp;
         this.value = value;
     }
 
@@ -19,14 +17,6 @@ public class TemperatureSample {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public Timestamp getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(Timestamp timestamp) {
-        this.timestamp = timestamp;
     }
 
     public int getValue() {
