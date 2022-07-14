@@ -13,33 +13,33 @@
 
 /* Log configuration */
 #include "sys/log.h"
-#define LOG_MODULE "temperature sensor"
+#define LOG_MODULE "humidity sensor"
 #define LOG_LEVEL LOG_LEVEL_APP
 
-struct temperature_sensor {
-    int temp;
+struct humidity_sensor {
+    int humidity;
     bool alarm;
 };
 
 // init sensor data
-static struct temperature_sensor temp_sensor = {.temp = TEMPERATURE_INIT, .alarm = false};
+static struct humidity_sensor hum_sensor = {.humidity = HUMIDITY_INIT, .alarm = false};
 
-static void temperature_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
-static void temperature_put_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
-static void temperature_event_handler(void);
+static void humidity_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
+static void humidity_put_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
+static void humidity_event_handler(void);
 
-EVENT_RESOURCE(res_temperature,
-                "title=\"temperature\";rt=\"Text\" POST/PUT value=<value>;obs",
-                temperature_get_handler,
+EVENT_RESOURCE(res_humidity,
+                "title=\"humidity\";rt=\"Text\" POST/PUT value=<value>;obs",
+                humidity_get_handler,
                 NULL,
-                temperature_put_handler,
+                humidity_put_handler,
                 NULL,
-                temperature_event_handler);
+                humidity_event_handler);
 
-static void temperature_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset)
+static void humidity_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset)
 {
     char message[COAP_CHUNK_SIZE];
-    set_json_msg_sample(message, COAP_CHUNK_SIZE, temp_sensor.temp);
+    set_json_msg_sample(message, COAP_CHUNK_SIZE, hum_sensor.humidity);
     LOG_INFO("new sample: %s\n", message);
     size_t len = sizeof(message) - 1;
 
@@ -52,17 +52,17 @@ static void temperature_get_handler(coap_message_t *request, coap_message_t *res
     coap_set_status_code(response, CONTENT_2_05);
 }
 
-static void temperature_event_handler(void)
+static void humidity_event_handler(void)
 {
-    int new_sample = get_temperature(temp_sensor.temp, temp_sensor.alarm);
-    if (new_sample != temp_sensor.temp)
+    int new_sample = get_humidity(hum_sensor.humidity, hum_sensor.alarm);
+    if (new_sample != hum_sensor.humidity)
     {
-        temp_sensor.temp = new_sample;
-        coap_notify_observers(&res_temperature);
+        hum_sensor.humidity = new_sample;
+        coap_notify_observers(&res_humidity);
     }
 }
 
-static void temperature_put_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset)
+static void humidity_put_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset)
 {
     const char* text = NULL;
     size_t len = 0;
@@ -78,14 +78,14 @@ static void temperature_put_handler(coap_message_t *request, coap_message_t *res
         if (strncmp(mode, "ON", len) == 0)
         {
             leds_single_on(LEDS_RED);
-            temp_sensor.alarm = true;
-            LOG_INFO("Enable alarm: %d\n", temp_sensor.temp);
+            hum_sensor.alarm = true;
+            LOG_INFO("Enable alarm: %d\n", hum_sensor.humidity);
         }
         else if (strncmp(mode, "OFF", len) == 0)
         {
             leds_single_off(LEDS_RED);
-            temp_sensor.alarm = false;
-            LOG_INFO("Disabled alarm: %d\n", temp_sensor.temp);
+            hum_sensor.alarm = false;
+            LOG_INFO("Disabled alarm: %d\n", hum_sensor.humidity);
         }
         else
         {

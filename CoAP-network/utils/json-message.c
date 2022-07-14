@@ -18,7 +18,7 @@ void set_json_msg_sample(char *message_buffer, size_t size, int value)
     memset(message_buffer, 0, size);
     snprintf(message_buffer,
                 size,
-                "{\"value\": \"%d\"}",
+                "{\"value\": %d}",
                 value);
 }
 
@@ -38,7 +38,7 @@ void set_json_msg_oxygen_sample(char *message_buffer, size_t size, float oxygen_
     memset(message_buffer, 0, size);
     snprintf(message_buffer,
                 size,
-                "{\"oxygenLevel\": \"%f\"}",
+                "{\"oxygenLevel\": %4.2f}",
                 oxygen_level);
 }
 
