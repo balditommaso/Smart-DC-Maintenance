@@ -11,7 +11,6 @@ import org.eclipse.californium.core.CoapClient;
 import org.eclipse.californium.core.CoapHandler;
 import org.eclipse.californium.core.CoapObserveRelation;
 import org.eclipse.californium.core.CoapResponse;
-import org.eclipse.californium.core.coap.MediaTypeRegistry;
 
 import java.io.StringReader;
 import java.sql.SQLException;
@@ -66,22 +65,13 @@ public class CoAPTemperatureObserver {
                             // set alarm
                             rack.setAlarm(true);
                             mySQLManager.updateRackSensor(rack);
-
-                            try {
-                                client.put("{ \"alarm\": 1}", MediaTypeRegistry.APPLICATION_JSON);
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
+                            CoAPHandleResource.setResourceAlarm(client, true);
                         } else if ((sample.getValue() > lowerBound && sample.getValue() < upperBound)
                                 && rack.getAlarm()) {
                             // reset alarm
                             rack.setAlarm(false);
                             mySQLManager.updateRackSensor(rack);
-                            try {
-                                client.put("{ \"alarm\": 0}", MediaTypeRegistry.APPLICATION_JSON);
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
+                            CoAPHandleResource.setResourceAlarm(client, false);
                         }
                     }
 
@@ -96,7 +86,7 @@ public class CoAPTemperatureObserver {
 
     public void stopObservingResource() {
         relation.proactiveCancel();
-        CoAPRegistrationResource.removeResource(rack);
+        CoAPHandleResource.removeResource(rack);
     }
 }
 

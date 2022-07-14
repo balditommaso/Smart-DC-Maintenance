@@ -6,7 +6,7 @@ public class CoAPServer extends CoapServer {
 
     public CoAPServer() {
         ConfigParameters configParameters = new ConfigParameters("config.properties");
-        this.add(new CoAPRegistrationResource(configParameters.getRegistrationResource()));
+        this.add(new CoAPHandleResource(configParameters.getRegistrationResource()));
         System.out.println("Start the CoAP Server");
         this.start();
     }
