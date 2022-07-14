@@ -40,7 +40,7 @@ int get_humidity(int last_sample, bool alarm)
     return generate_sample(last_sample, alarm, HUMIDITY_LOWER_BOUND, HUMIDITY_UPPER_BOUND, HUMIDITY_GOOD_VALUE);
 }
 
-float get_oxygen_level(int last_sample, bool alarm)
+int get_oxygen_level(int last_sample, bool alarm)
 {
     int variation = rand() % 16;
     float new_sample;
