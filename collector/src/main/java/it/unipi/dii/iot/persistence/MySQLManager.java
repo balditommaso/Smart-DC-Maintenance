@@ -70,14 +70,15 @@ public class MySQLManager {
 
     public void insertRackSensor (RackSensor rack) {
         try (
-                PreparedStatement statement = connection.prepareStatement("INSERT INTO rack_sensor (idSensor, alarm) VALUES (?, ?)")
+                PreparedStatement statement = connection.prepareStatement("INSERT INTO rack_sensor (idSensor, type, alarm) VALUES (?, ?, ?)")
         ){
             statement.setString(1, rack.getRackSensorId());
-            statement.setBoolean(2, rack.getAlarm());
+            statement.setString(2, rack.getType());
+            statement.setBoolean(3, rack.getAlarm());
             statement.executeUpdate();
         }
         catch (final SQLIntegrityConstraintViolationException e) {
-            System.out.printf("INFO: rack sensor %s already registered in the database.%n", rack.getRackSensorId());
+            System.out.printf("INFO: rack sensor %s as %s sensor already registered in the database.%n", rack.getRackSensorId(), rack.getType());
         }
         catch (final SQLException e) {
             e.printStackTrace();
@@ -103,11 +104,10 @@ public class MySQLManager {
     public void insertTemperatureSample (TemperatureSample sample) {
         try (
                 PreparedStatement statement = connection.prepareStatement("INSERT INTO temperature_samples "
-                        + "(idSensor, timestamp, value) VALUES (?, ?, ?)")
+                        + "(idSensor, timestamp, value) VALUES (?, NULL, ?)")
         ){
             statement.setString(1, sample.getId());
-            statement.setTimestamp(2, sample.getTimestamp());
-            statement.setInt(3, sample.getValue());
+            statement.setInt(2, sample.getValue());
 
             statement.executeUpdate();
 
@@ -120,11 +120,10 @@ public class MySQLManager {
     public void insertHumiditySample (HumiditySample sample) {
         try (
                 PreparedStatement statement = connection.prepareStatement("INSERT INTO humidity_samples "
-                        + "(idSensor, timestamp, value) VALUES (?, ?, ?)")
+                        + "(idSensor, timestamp, value) VALUES (?, NULL, ?)")
         ){
             statement.setString(1, sample.getId());
-            statement.setTimestamp(2, sample.getTimestamp());
-            statement.setInt(3, sample.getValue());
+            statement.setInt(2, sample.getValue());
 
             statement.executeUpdate();
 
@@ -137,11 +136,10 @@ public class MySQLManager {
     public void insertOxygenSample (OxygenSample sample) {
         try (
                 PreparedStatement statement = connection.prepareStatement("INSERT INTO oxygen_samples "
-                        + "(idSensor, timestamp, value) VALUES (?, ?, ?)")
+                        + "(idSensor, timestamp, value) VALUES (?, NULL, ?)")
         ){
             statement.setString(1, sample.getId());
-            statement.setTimestamp(2, sample.getTimestamp());
-            statement.setFloat(3, sample.getValue());
+            statement.setFloat(2, sample.getValue());
 
             statement.executeUpdate();
 

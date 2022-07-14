@@ -16,16 +16,15 @@ import org.eclipse.californium.core.server.resources.CoapExchange;
 
 import java.io.StringReader;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 
-public class CoAPHandleResource extends CoapResource {
+public class CoAPResourceHandler extends CoapResource {
 
      private MySQLManager mySQLManager;
-     private static HashMap<String, ArrayList<Object>> activeResources;
+     private static HashMap<String, Object> activeResources;
 
-    public CoAPHandleResource(String name) {
+    public CoAPResourceHandler(String name) {
         super(name);
         activeResources = new HashMap<>();
         try {
@@ -46,6 +45,7 @@ public class CoAPHandleResource extends CoapResource {
         RackSensor rackSensor = null;
         try {
             rackSensor = parser.fromJson(reader, RackSensor.class);
+            rackSensor.setAlarm(false);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -56,13 +56,21 @@ public class CoAPHandleResource extends CoapResource {
         }
 
         mySQLManager.insertRackSensor(rackSensor);
-        System.out.println("Check if already active");
+        System.out.println("INFO: Checking if already active");
         if (!activeResources.containsKey(rackSensor.getRackSensorId())) {
-            ArrayList<Object> resources = new ArrayList<>();
-            resources.add(new CoAPTemperatureObserver(rackSensor));
-            resources.add(new CoAPHumidityObserver(rackSensor));
-            resources.add(new CoAPOxygenObserver(rackSensor));
-            activeResources.put(rackSensor.getRackSensorId(), resources);
+            switch (rackSensor.getType()) {
+                case "temperature":
+                    activeResources.put(rackSensor.getRackSensorId(), new CoAPTemperatureObserver(rackSensor));
+                    break;
+                case "humidity":
+                    activeResources.put(rackSensor.getRackSensorId(), new CoAPHumidityObserver(rackSensor));
+                    break;
+                case "oxygen":
+                    activeResources.put(rackSensor.getRackSensorId(), new CoAPOxygenObserver(rackSensor));
+                    break;
+                default:
+                    System.err.println("ERROR: not valid sensor type");
+            }
         }
 
         response.getOptions().setContentFormat(MediaTypeRegistry.APPLICATION_JSON);

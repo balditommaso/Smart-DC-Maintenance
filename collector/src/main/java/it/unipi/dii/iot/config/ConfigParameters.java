@@ -29,6 +29,7 @@ public class ConfigParameters {
     private String temperatureResource;
     private String humidityResource;
     private String oxygenResource;
+    private String actuatorResource;
 
     private int temperatureLowerBound;
     private int temperatureUpperBound;
@@ -59,6 +60,7 @@ public class ConfigParameters {
             temperatureResource = prop.getProperty("temperatureResource");
             humidityResource = prop.getProperty("humidityResource");
             oxygenResource = prop.getProperty("oxygenResource");
+            actuatorResource = prop.getProperty("actuatorResource");
 
             temperatureLowerBound = Integer.parseInt(prop.getProperty("temperatureLowerBound"));
             temperatureUpperBound = Integer.parseInt(prop.getProperty("temperatureUpperBound"));
@@ -117,6 +119,10 @@ public class ConfigParameters {
 
     public String getOxygenResource() {
         return oxygenResource;
+    }
+
+    public String getActuatorResource() {
+        return actuatorResource;
     }
 
     public int getTemperatureLowerBound() {

@@ -7,9 +7,9 @@
 #include "coap-engine.h"
 #include "dev/leds.h"
 #include "sys/node-id.h"
-#include "./utils/coap-server-constants.h"
-#include "./utils/json-message.h"
-#include "../sensor-signs/sensor-sample.h"
+#include "../utils/coap-server-constants.h"
+#include "../utils/json-message.h"
+#include "../../sensor-signs/sensor-sample.h"
 
 /* Log configuration */
 #include "sys/log.h"

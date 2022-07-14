@@ -14,11 +14,11 @@ import org.eclipse.californium.core.CoapResponse;
 
 import java.io.StringReader;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 
 public class CoAPOxygenObserver {
     private MySQLManager mySQLManager;
-    private final CoapClient client;
+    private final CoapClient sensor;
+    private final CoapClient actuator;
     private final float upperBound;
     private final float lowerBound;
     private final RackSensor rack;
@@ -29,8 +29,10 @@ public class CoAPOxygenObserver {
         upperBound = configParameters.getOxygenUpperBound();
         lowerBound = configParameters.getOxygenLowerBound();
 
-        client = new CoapClient("coap://[" + rack.getRackSensorId() + "]:" + configParameters.getCoapPort()
+        sensor = new CoapClient("coap://[" + rack.getRackSensorId() + "]:" + configParameters.getCoapPort()
                 + "/" + configParameters.getOxygenResource());
+        actuator = new CoapClient("coap://[" + rack.getRackSensorId() + "]:" + configParameters.getCoapPort()
+                + "/" + configParameters.getActuatorResource());
 
         try {
             mySQLManager = new MySQLManager(MySQLDriver.getConnection());
@@ -40,7 +42,7 @@ public class CoAPOxygenObserver {
 
         this.rack = rack;
         System.out.printf("INFO: Start observing oxygen of %s\n", rack.getRackSensorId());
-        relation = client.observe(
+        relation = sensor.observe(
                 new CoapHandler() {
                     @Override
                     public void onLoad(CoapResponse coapResponse) {
@@ -54,7 +56,6 @@ public class CoAPOxygenObserver {
 
                         OxygenSample sample = parser.fromJson(reader, OxygenSample.class);
                         sample.setId(rack.getRackSensorId());
-                        sample.setTimestamp(new Timestamp(System.currentTimeMillis()));
 
                         // ADD to DB
                         mySQLManager.insertOxygenSample(sample);
@@ -65,14 +66,16 @@ public class CoAPOxygenObserver {
                             System.out.printf("INFO: activating alarm to %s\n", rack.getRackSensorId());
                             rack.setAlarm(true);
                             mySQLManager.updateRackSensor(rack);
-                            CoAPHandleResource.setResourceAlarm(client, true);
+                            CoAPResourceHandler.setResourceAlarm(sensor, true);
+                            CoAPResourceHandler.setResourceAlarm(actuator, true);
                         } else if ((sample.getValue() > lowerBound && sample.getValue() < upperBound)
                                 && rack.getAlarm()) {
                             // reset alarm
                             System.out.printf("INFO: deactivating alarm to %s\n", rack.getRackSensorId());
                             rack.setAlarm(false);
                             mySQLManager.updateRackSensor(rack);
-                            CoAPHandleResource.setResourceAlarm(client, false);
+                            CoAPResourceHandler.setResourceAlarm(sensor, false);
+                            CoAPResourceHandler.setResourceAlarm(actuator, false);
                         }
                     }
 
@@ -87,7 +90,7 @@ public class CoAPOxygenObserver {
 
     public void stopObservingResource() {
         relation.proactiveCancel();
-        CoAPHandleResource.removeResource(rack);
+        CoAPResourceHandler.removeResource(rack);
     }
 }
 
