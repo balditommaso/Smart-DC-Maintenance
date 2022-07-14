@@ -182,7 +182,6 @@ public class MqttCollector implements MqttCallback {
 
     		BandSample bandSample = parser.fromJson(payload, BandSample.class);
         	bandSample.setBandId(Topic.getBandId(topic));
-        	bandSample.setTimestamp(new Timestamp(System.currentTimeMillis()));
         	bandSample.setTemperature(bandSample.getTemperature()/10.0);
         	mySQLManager.insertBandSample(bandSample);
         	

@@ -49,17 +49,16 @@ public class MySQLManager {
     public void insertBandSample (BandSample bandSample) {
         try (
                 PreparedStatement statement = connection.prepareStatement("INSERT INTO band_samples "
-                		+ "(timestamp,bandid,batteryLevel,oxygenSaturation,bloodPressure,temperature,respiration,heartRate)"
-                		+ " VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
+                		+ "(bandid,batteryLevel,oxygenSaturation,bloodPressure,temperature,respiration,heartRate)"
+                		+ " VALUES (?, ?, ?, ?, ?, ?, ?)")
         ){
-            statement.setTimestamp(1, bandSample.getTimestamp());
-            statement.setString(2, bandSample.getBandId());
-            statement.setInt(3, bandSample.getBatteryLevel());
-            statement.setInt(4, bandSample.getOxygenSaturation());
-            statement.setInt(5, bandSample.getBloodPressure());
-            statement.setDouble(6, bandSample.getTemperature());
-            statement.setInt(7, bandSample.getRespiration());
-            statement.setInt(8, bandSample.getHeartRate());
+            statement.setString(1, bandSample.getBandId());
+            statement.setInt(2, bandSample.getBatteryLevel());
+            statement.setInt(3, bandSample.getOxygenSaturation());
+            statement.setInt(4, bandSample.getBloodPressure());
+            statement.setDouble(5, bandSample.getTemperature());
+            statement.setInt(6, bandSample.getRespiration());
+            statement.setInt(7, bandSample.getHeartRate());
             statement.executeUpdate();
 
         }
