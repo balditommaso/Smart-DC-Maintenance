@@ -24,7 +24,7 @@
 
 /* Log configuration */
 #include "sys/log.h"
-#define LOG_MODULE "App"
+#define LOG_MODULE "RACK NODE"
 #define LOG_LEVEL LOG_LEVEL_APP
 
 struct coap_rack {
@@ -60,8 +60,6 @@ void client_chunk_handler(coap_message_t *response)
     const uint8_t *chunk;
     int len = coap_get_payload(response, &chunk);
 
-    // char success_response[COAP_CHUNK_SIZE];
-    //set_json_success_registration(success_response, COAP_CHUNK_SIZE);
     LOG_INFO("Received response: %s\n", (char*)chunk);
     if (parse_json_registration((char*)chunk, (size_t)len))
         rack.state = COAP_STATE_ACTIVE;
@@ -89,36 +87,34 @@ static void finish_rack()
     etimer_stop(&rack.state_check_timer);
 }
 
-extern coap_resource_t res_temperature/*, res_humidity*/;
+extern coap_resource_t res_temperature, res_humidity, res_oxygen;
 
 PROCESS_THREAD(contiki_coap_server, ev, data) 
 {
-    // init the rack state
-    
-
     PROCESS_BEGIN();
     LOG_INFO("Process Started");
     // rack sensor not active yet
     init_rack_state();
     leds_single_on(LEDS_RED);
-    PROCESS_PAUSE();
-
     // activate the resource
     LOG_INFO("Starting the rack-sensor CoAP Server\n");
     coap_activate_resource(&res_temperature, COAP_TEMPERATURE_PATH);
-    // coap_activate_resource(&res_humidity, COAP_HUMIDITY_PATH);
+    coap_activate_resource(&res_humidity, COAP_HUMIDITY_PATH);
+    coap_activate_resource(&res_oxygen, COAP_OXYGEN_PATH);
+
     static coap_endpoint_t server_endpoint;
     static coap_message_t request[1];
 
     while(1) 
     {
         PROCESS_YIELD();
+
         if ((ev == PROCESS_EVENT_TIMER && data == &rack.state_check_timer) || 
             (ev == PROCESS_EVENT_POLL))
         {
             if (rack.state == COAP_STATE_INIT)
             {
-                LOG_INFO("State %d: Check connection to the network\n", rack.state);
+                leds_single_toggle(LEDS_RED);
                 is_connected();
             }
             else if (rack.state == COAP_STATE_NETWORK_OK)
@@ -128,8 +124,8 @@ PROCESS_THREAD(contiki_coap_server, ev, data)
                 char url[COAP_URL_SIZE];
                 sprintf(url, "coap://[%s]:%d", SERVER_IP, SERVER_PORT);
                 LOG_INFO("Try to register to %s\n", url);
+                coap_endpoint_parse(url, strlen(url), &server_endpoint);      
 
-                coap_endpoint_parse(url, strlen(url), &server_endpoint);       // TODO: ask edo if we need to separate this part
                 // prepare the message
                 char message[COAP_CHUNK_SIZE];
                 set_json_msg_sensor_registration(message, COAP_CHUNK_SIZE, rack.rack_id);
@@ -146,7 +142,8 @@ PROCESS_THREAD(contiki_coap_server, ev, data)
                 leds_single_off(LEDS_RED);
                 leds_single_on(LEDS_GREEN);
                 res_temperature.trigger();
-                // res_humidity.trigger();
+                res_humidity.trigger();
+                res_oxygen.trigger();
             }
             else
             {
@@ -154,10 +151,9 @@ PROCESS_THREAD(contiki_coap_server, ev, data)
             }
             etimer_reset(&rack.state_check_timer);  
         }
-        // if i press the button i fix the problem so  have to tell at the server to 
-        // reset the alarm
     }
 
+    // clean data structure
     finish_rack();
     PROCESS_END();
 }

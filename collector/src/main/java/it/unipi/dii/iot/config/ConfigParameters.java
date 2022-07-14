@@ -24,6 +24,7 @@ public class ConfigParameters {
     private int heartRateLowerThreshold;
     private int heartRateHigherThreshold;
 
+    private int coapPort;
     private String registrationResource;
     private String temperatureResource;
     private String humidityResource;
@@ -33,8 +34,8 @@ public class ConfigParameters {
     private int temperatureUpperBound;
     private int humidityLowerBound;
     private int humidityUpperBound;
-    private double oxygenLowerBound;
-    private double oxygenUpperBound;
+    private float oxygenLowerBound;
+    private float oxygenUpperBound;
 
 
     public ConfigParameters(String configFilePath) {
@@ -53,6 +54,7 @@ public class ConfigParameters {
             brokerPort = Integer.parseInt(prop.getProperty("brokerPort"));
             maxSamplesCache = Integer.parseInt(prop.getProperty("maxSamplesCache"));
 
+            coapPort = Integer.parseInt(prop.getProperty("coapPort"));
             registrationResource = prop.getProperty("registrationResource");
             temperatureResource = prop.getProperty("temperatureResource");
             humidityResource = prop.getProperty("humidityResource");
@@ -62,8 +64,8 @@ public class ConfigParameters {
             temperatureUpperBound = Integer.parseInt(prop.getProperty("temperatureUpperBound"));
             humidityLowerBound = Integer.parseInt(prop.getProperty("humidityLowerBound"));
             humidityUpperBound = Integer.parseInt(prop.getProperty("humidityUpperBound"));
-            oxygenLowerBound = Double.parseDouble(prop.getProperty("oxygenLowerBound"));
-            oxygenUpperBound = Double.parseDouble(prop.getProperty("oxygenUpperBound"));
+            oxygenLowerBound = Float.parseFloat(prop.getProperty("oxygenLowerBound"));
+            oxygenUpperBound = Float.parseFloat(prop.getProperty("oxygenUpperBound"));
 
             oxygenSaturationThreshold = Integer.parseInt(prop.getProperty("oxygenSaturationThreshold"));
             bloodPressureLowerThreshold = Integer.parseInt(prop.getProperty("bloodPressureLowerThreshold")); 
@@ -97,6 +99,10 @@ public class ConfigParameters {
     public int getBrokerPort() { return brokerPort; }
     public int getMaxSamplesCache() { return maxSamplesCache; }
 
+    public int getCoapPort() {
+        return coapPort;
+    }
+
     public String getRegistrationResource() {
         return registrationResource;
     }
@@ -129,11 +135,11 @@ public class ConfigParameters {
         return humidityUpperBound;
     }
 
-    public double getOxygenLowerBound() {
+    public float getOxygenLowerBound() {
         return oxygenLowerBound;
     }
 
-    public double getOxygenUpperBound() {
+    public float getOxygenUpperBound() {
         return oxygenUpperBound;
     }
 

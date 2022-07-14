@@ -1,15 +1,13 @@
 package it.unipi.dii.iot.persistence;
 
-import it.unipi.dii.iot.model.BandDevice;
-import it.unipi.dii.iot.model.BandSample;
-import it.unipi.dii.iot.model.RackSample;
-import it.unipi.dii.iot.model.RackSensor;
+import it.unipi.dii.iot.model.*;
+
 
 import java.sql.*;
 
 public class MySQLManager {
 
-    private Connection connection;
+    private final Connection connection;
 
     public MySQLManager (Connection connection) {
         this.connection = connection;
@@ -32,7 +30,7 @@ public class MySQLManager {
         }
     }
 
-    public int updateBand (BandDevice bandDevice) {
+    public void updateBand (BandDevice bandDevice) {
         try (
                 PreparedStatement statement = connection.prepareStatement("UPDATE band_device SET active = ?, alertOn = ? WHERE idband = ?")
         ){
@@ -43,12 +41,9 @@ public class MySQLManager {
         }
         catch (final SQLException e) {
             e.printStackTrace();
-            return -1;
         } catch (Exception e) {
             System.err.println(e.getMessage());
-            return 1;
         }
-        return 0;
     }
     
     public void insertBandSample (BandSample bandSample) {
@@ -73,26 +68,6 @@ public class MySQLManager {
         }
     }
 
-    public boolean searchRackSensor(RackSensor rack) {
-        boolean find = false;
-        try (
-                PreparedStatement statement = connection.prepareStatement("SELECT * FROM rack_sensor WHERE idSensor = ?")
-        ){
-            statement.setString(1, rack.getRackSensorId());
-            ResultSet resultSet = statement.executeQuery();
-            find = (resultSet.getRow() == 1);
-            if (resultSet.getRow() == 1){
-                return true;
-            } else {
-                return false;
-            }
-        }
-        catch (final SQLException e) {
-            e.printStackTrace();
-        }
-        return find;
-    }
-
     public void insertRackSensor (RackSensor rack) {
         try (
                 PreparedStatement statement = connection.prepareStatement("INSERT INTO rack_sensor (idSensor, alarm) VALUES (?, ?)")
@@ -109,7 +84,7 @@ public class MySQLManager {
         }
     }
 
-    public int updateRackSensor (RackSensor rackSensor) {
+    public void updateRackSensor (RackSensor rackSensor) {
         try (
                 PreparedStatement statement = connection.prepareStatement("UPDATE rack_sensor SET alarm = ? WHERE idsensor = ?")
         ){
@@ -120,23 +95,53 @@ public class MySQLManager {
         }
         catch (final SQLException e) {
             e.printStackTrace();
-            return -1;
         } catch (Exception e) {
             System.err.println(e.getMessage());
-            return 1;
         }
-        return 0;
     }
 
-    public void insertRackSensorSample (RackSample sample) {
+    public void insertTemperatureSample (TemperatureSample sample) {
         try (
-                PreparedStatement statement = connection.prepareStatement("INSERT INTO rack_samples "
-                        + "(idSensor, timestamp, measure, value) VALUES (?, ?, ?, ?)")
+                PreparedStatement statement = connection.prepareStatement("INSERT INTO temperature_samples "
+                        + "(idSensor, timestamp, value) VALUES (?, ?, ?)")
         ){
-            statement.setString(1, sample.getRackSensorId());
+            statement.setString(1, sample.getId());
             statement.setTimestamp(2, sample.getTimestamp());
-            statement.setString(3, sample.getMeasure());
-            statement.setInt(4, sample.getValue());
+            statement.setInt(3, sample.getValue());
+
+            statement.executeUpdate();
+
+        }
+        catch (final SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void insertHumiditySample (HumiditySample sample) {
+        try (
+                PreparedStatement statement = connection.prepareStatement("INSERT INTO humidity_samples "
+                        + "(idSensor, timestamp, value) VALUES (?, ?, ?)")
+        ){
+            statement.setString(1, sample.getId());
+            statement.setTimestamp(2, sample.getTimestamp());
+            statement.setInt(3, sample.getValue());
+
+            statement.executeUpdate();
+
+        }
+        catch (final SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void insertOxygenSample (OxygenSample sample) {
+        try (
+                PreparedStatement statement = connection.prepareStatement("INSERT INTO oxygen_samples "
+                        + "(idSensor, timestamp, value) VALUES (?, ?, ?)")
+        ){
+            statement.setString(1, sample.getId());
+            statement.setTimestamp(2, sample.getTimestamp());
+            statement.setFloat(3, sample.getValue());
 
             statement.executeUpdate();
 
