@@ -4,8 +4,8 @@ all: $(CONTIKI_PROJECT)
 # Do not try to build on Sky because of code size limitation
 PLATFORMS_EXCLUDE = sky z1
 
-CONTIKI=../../..
-SDCM = ../
+CONTIKI=../../../..
+SDCM = ../../
 
 # Include the CoAP implementation
 include $(CONTIKI)/Makefile.dir-variables
@@ -17,6 +17,6 @@ MODULES_REL += arch/platform/$(TARGET)
 #MODULES_REL += ./resources
 MODULES_REL += $(SDCM)/CoAP-network/utils
 MODULES_REL += $(SDCM)/CoAP-network/sensor-signs
-MODULES_REL += $(SDCM)/CoAP-network/resources
+MODULES_REL += ./resources
 
 include $(CONTIKI)/Makefile.include

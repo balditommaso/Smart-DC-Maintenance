@@ -21,6 +21,7 @@
 
 /* COAP resources path */
 #define COAP_TEMPERATURE_PATH               "temperature"
+#define COAP_VENTILATION_PATH               "ventilation"
 #define COAP_HUMIDITY_PATH      	        "humidity"
 #define COAP_OXYGEN_PATH                    "oxygen"
 

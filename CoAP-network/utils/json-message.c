@@ -4,13 +4,14 @@
 #include "json-message.h"
 #include "../sensor-signs/sensor-sample-constants.h"
 
-void set_json_msg_sensor_registration(char *message_buffer, size_t size, char *sensor_id)
+void set_json_msg_sensor_registration(char *message_buffer, size_t size, char *sensor_id, char* type)
 {
     memset(message_buffer, 0, size);
     snprintf(message_buffer,
                 size,
-                "{\"rackSensorId\": \"%s\", \"alarm\": false}",
-                sensor_id);
+                "{\"rackSensorId\": \"%s\", \"type\": \"%s\"}",
+                sensor_id,
+                type);
 }
 
 void set_json_msg_sample(char *message_buffer, size_t size, int value)
@@ -20,15 +21,6 @@ void set_json_msg_sample(char *message_buffer, size_t size, int value)
                 size,
                 "{\"value\": %d}",
                 value);
-}
-
-void set_json_msg_oxygen_sample(char *message_buffer, size_t size, float oxygen_level)
-{
-    memset(message_buffer, 0, size);
-    snprintf(message_buffer,
-                size,
-                "{\"oxygenLevel\": %4.2f}",
-                oxygen_level);
 }
 
 void set_json_msg_check_request(char *message_buffer, size_t size)

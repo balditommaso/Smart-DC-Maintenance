@@ -17,7 +17,7 @@
 #define LOG_LEVEL LOG_LEVEL_APP
 
 struct oxygen_sensor {
-    float o2_level;
+    int o2_level;
     bool alarm;
 };
 
@@ -54,7 +54,7 @@ static void oxygen_get_handler(coap_message_t *request, coap_message_t *response
 
 static void oxygen_event_handler(void)
 {
-    float new_sample = get_oxygen_level(o2_sensor.o2_level, o2_sensor.alarm);
+    int new_sample = get_oxygen_level(o2_sensor.o2_level, o2_sensor.alarm);
     if (new_sample != o2_sensor.o2_level)
     {
         o2_sensor.o2_level = new_sample;
@@ -79,13 +79,13 @@ static void oxygen_put_handler(coap_message_t *request, coap_message_t *response
         {
             leds_single_on(LEDS_RED);
             o2_sensor.alarm = true;
-            LOG_INFO("Enable alarm: %4.2f\n", o2_sensor.o2_level);
+            LOG_INFO("Enable alarm");
         }
         else if (strncmp(mode, "OFF", len) == 0)
         {
             leds_single_off(LEDS_RED);
             o2_sensor.alarm = false;
-            LOG_INFO("Disabled alarm: %4.2f\n", o2_sensor.o2_level);
+            LOG_INFO("Disabled alarm");
         }
         else
         {
