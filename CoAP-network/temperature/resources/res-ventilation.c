@@ -46,13 +46,13 @@ static void ventilation_put_handler(coap_message_t *request, coap_message_t *res
         {
             leds_single_toggle(LEDS_GREEN);
             active = true;
-            LOG_INFO("Ventilation ON");
+            LOG_INFO("Ventilation ON\n");
         }
         else if (strncmp(mode, "OFF", len) == 0)
         {
             leds_single_on(LEDS_GREEN);
             active = false;
-            LOG_INFO("Ventilation OFF");
+            LOG_INFO("Ventilation OFF\n");
         }
         else
         {

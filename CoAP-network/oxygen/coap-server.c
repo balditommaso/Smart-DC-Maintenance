@@ -137,7 +137,6 @@ PROCESS_THREAD(contiki_coap_server, ev, data)
             }
             else if (rack.state == COAP_STATE_ACTIVE)
             {
-                LOG_INFO("Sending data\n");
                 leds_single_off(LEDS_RED);
                 leds_single_on(LEDS_GREEN);
                 res_oxygen.trigger();
