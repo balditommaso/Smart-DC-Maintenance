@@ -123,10 +123,35 @@ public class MqttCollector implements MqttCallback {
             me.printStackTrace();
         }
     }
-
+    
     @Override
     public void connectionLost(Throwable throwable) {
         logger.log(Level.INFO, "Lost the connection with the broker.");
+        int iter = 0;
+        do {
+            iter++;
+            if (iter > 6)
+            {
+                System.err.println("Reconnection with the broker not possible!");
+                System.exit(-1);
+            }
+            try {
+            	Thread.sleep(1000 * iter);
+	            System.out.println("New attempt to connect to the broker...");
+	            mqttClient.connect();
+	            mqttClient.setCallback(this);
+	            logger.log(Level.INFO, "Connected to the broker.");
+	            
+	            mqttClient.subscribe(Topic.ALL_COMMANDS_TOWARDS_COLLECTOR);
+	            mqttClient.subscribe(Topic.ALL_BANDS_STATUS);
+	            mqttClient.subscribe(Topic.ALL_BANDS_SAMPLES);
+	        }
+	        catch (MqttException | InterruptedException e)
+	        {
+	            e.printStackTrace();
+	        }
+	    } while (!this.mqttClient.isConnected());
+	    System.out.println("Connection with the Broker restored!");
         stop();
     }
 
