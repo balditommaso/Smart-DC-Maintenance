@@ -22,17 +22,6 @@ void set_json_msg_sample(char *message_buffer, size_t size, int value)
                 value);
 }
 
-/*
-void set_json_msg_humidity_sample(char *message_buffer, size_t size, int humidity)
-{
-    memset(message_buffer, 0, size);
-    snprintf(message_buffer,
-                size,
-                "{\"humidity\": \"%d\"}",
-                humidity);
-}
-*/
-
 void set_json_msg_oxygen_sample(char *message_buffer, size_t size, float oxygen_level)
 {
     memset(message_buffer, 0, size);
