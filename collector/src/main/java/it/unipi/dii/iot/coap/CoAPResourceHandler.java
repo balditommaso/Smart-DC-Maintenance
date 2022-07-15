@@ -37,7 +37,8 @@ public class CoAPResourceHandler extends CoapResource {
     public void handlePOST(CoapExchange exchange) {
         Response response = new Response(CoAP.ResponseCode.CONTINUE);
         System.out.println("Coap registration request: " + new String(exchange.getRequestPayload()));
-
+        String sender = exchange.getSourceAddress().getHostAddress();
+        System.out.println("**attention: " + sender);
         Gson parser = new Gson();
         String payload = new String(exchange.getRequestPayload());
         JsonReader reader = new JsonReader(new StringReader(payload));
