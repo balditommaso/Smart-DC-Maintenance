@@ -36,9 +36,7 @@ public class CoAPResourceHandler extends CoapResource {
 
     public void handlePOST(CoapExchange exchange) {
         Response response = new Response(CoAP.ResponseCode.CONTINUE);
-        System.out.println("Coap registration request: " + new String(exchange.getRequestPayload()));
         String sender = exchange.getSourceAddress().getHostAddress();
-        System.out.println("**attention: " + sender);
         Gson parser = new Gson();
         String payload = new String(exchange.getRequestPayload());
         JsonReader reader = new JsonReader(new StringReader(payload));
@@ -46,6 +44,7 @@ public class CoAPResourceHandler extends CoapResource {
         RackSensor rackSensor = null;
         try {
             rackSensor = parser.fromJson(reader, RackSensor.class);
+            rackSensor.setRackSensorId(sender);
             rackSensor.setAlarm(false);
         } catch (Exception e) {
             e.printStackTrace();
@@ -72,6 +71,7 @@ public class CoAPResourceHandler extends CoapResource {
                 default:
                     System.err.println("ERROR: not valid sensor type");
             }
+            System.out.printf("INFO: new resource added: %s/%s \n", rackSensor.getRackSensorId(), rackSensor.getType());
         }
 
         response.getOptions().setContentFormat(MediaTypeRegistry.APPLICATION_JSON);
