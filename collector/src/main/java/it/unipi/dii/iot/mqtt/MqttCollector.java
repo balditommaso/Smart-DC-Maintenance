@@ -112,7 +112,7 @@ public class MqttCollector implements MqttCallback {
     		message = "Temperature value is not within thresholds";
     	else if (alarmCode == 3)
     		message = "Respiration value is not within thresholds";
-    	else if (alarmCode == 5)
+    	else if (alarmCode == 4)
     		message = "Heart Rate value is not within thresholds";
     	
     	message += "**";
@@ -208,6 +208,9 @@ public class MqttCollector implements MqttCallback {
     
     private Integer checkForAlarms(String bandId) {
     	double[] avgs = sampleCollector.calculateWeightedAverages(bandId);
+    	
+    	for (int i=0; i<5; i++)
+    		System.out.println(avgs[i]);
     	
     	if (avgs[0] < oxygenSaturationThreshold)
     		return 0;
