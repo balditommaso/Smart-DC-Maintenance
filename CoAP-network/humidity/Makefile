@@ -1,8 +1,9 @@
 CONTIKI_PROJECT = coap-server
 all: $(CONTIKI_PROJECT)
+PLATFORMS_ONLY = cc26x0-cc13x0
 
 # Do not try to build on Sky because of code size limitation
-PLATFORMS_EXCLUDE = sky z1
+PLATFORMS_EXCLUDE = sky z1 nrf52dk
 
 CONTIKI=../../../..
 SDCM = ../../
@@ -18,5 +19,9 @@ MODULES_REL += arch/platform/$(TARGET)
 MODULES_REL += $(SDCM)/CoAP-network/utils
 MODULES_REL += $(SDCM)/CoAP-network/sensor-signs
 MODULES_REL += ./resources
+
+MAKE_NET_IPV6 = 1
+MAKE_MAC ?= MAKE_MAC_CSMA
+MAKE_NET = MAKE_NET_IPV6
 
 include $(CONTIKI)/Makefile.include
