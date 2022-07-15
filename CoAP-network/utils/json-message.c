@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <string.h>
-#include "os/sys/clock.h"
 #include "json-message.h"
 #include "../sensor-signs/sensor-sample-constants.h"
 

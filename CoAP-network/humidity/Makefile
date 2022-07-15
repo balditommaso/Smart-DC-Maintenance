@@ -12,10 +12,12 @@ SDCM = ../../
 include $(CONTIKI)/Makefile.dir-variables
 MODULES += $(CONTIKI_NG_APP_LAYER_DIR)/coap
 
+
+CFALGS += -DPROJECT_CONF_H=\"project-conf.h\"
+
 -include $(CONTIKI)/Makefile.identify-target
 MODULES_REL += arch/platform/$(TARGET)
 # Include CoAP resources
-#MODULES_REL += ./resources
 MODULES_REL += $(SDCM)/CoAP-network/utils
 MODULES_REL += $(SDCM)/CoAP-network/sensor-signs
 MODULES_REL += ./resources

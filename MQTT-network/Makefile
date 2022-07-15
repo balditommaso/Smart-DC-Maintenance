@@ -7,6 +7,9 @@ SDCM = ../
 
 PLATFORMS_EXCLUDE = nrf52dk
 
+
+CFALGS += -DPROJECT_CONF_H=\"project-conf.h\"
+
 include $(CONTIKI)/Makefile.dir-variables
 MODULES += $(CONTIKI_NG_APP_LAYER_DIR)/mqtt
 

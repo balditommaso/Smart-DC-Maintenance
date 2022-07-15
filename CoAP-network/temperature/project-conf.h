@@ -1,7 +1,6 @@
 #ifndef PROJECT_CONF_H_
 #define PROJECT_CONF_H_
 
-
 // Set the max response payload before enable fragmentation:
 
 #undef REST_MAX_CHUNK_SIZE
