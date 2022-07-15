@@ -6,7 +6,7 @@ int generate_sample(int last_sample, bool alarm, int lower_bound, int upper_boun
     int new_sample;
     if (alarm)
     {
-        new_sample = last_sample + (int)(good_value - last_sample)*0.5;
+        new_sample = last_sample + (int)(good_value - last_sample)*0.1;
     }
     else
     {
@@ -45,9 +45,9 @@ int get_oxygen_level(int last_sample, bool alarm)
     int variation = rand() % 16;
     float new_sample;
     if (alarm)
-        new_sample = last_sample + (OXYGEN_GOOD_VALUE - last_sample)*0.50;
+        new_sample = last_sample + (OXYGEN_GOOD_VALUE - last_sample)*0.1;
     else
-        new_sample = last_sample + variation*0.75;
+        new_sample = last_sample + variation*0.25;
 
     if (new_sample > OXYGEN_UPPER_BOUND)
             new_sample = OXYGEN_UPPER_BOUND;
