@@ -1,6 +1,6 @@
 CONTIKI_PROJECT = mqtt-network
 all: $(CONTIKI_PROJECT)
-PLATFORMS_ONLY = cc26x0-cc13x0
+#PLATFORMS_ONLY = cc26x0-cc13x0
 
 CONTIKI = ../../..
 SDCM = ../

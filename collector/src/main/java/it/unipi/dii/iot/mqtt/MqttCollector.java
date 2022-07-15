@@ -185,10 +185,10 @@ public class MqttCollector implements MqttCallback {
         	bandSample.setTemperature(bandSample.getTemperature()/10.0);
         	mySQLManager.insertBandSample(bandSample);
         	
-            logger.log(Level.INFO, "Adding the sample to the local cache.");
+            //logger.log(Level.INFO, "Adding the sample to the local cache.");
         	sampleCollector.addBandSample(bandSample);
         	
-            logger.log(Level.INFO, "Checking if alarm has to be activated.");
+            //logger.log(Level.INFO, "Checking if alarm has to be activated.");
         	int ret = checkForAlarms(bandSample.getBandId());
         	
         	if (ret != -1) {
@@ -209,8 +209,8 @@ public class MqttCollector implements MqttCallback {
     private Integer checkForAlarms(String bandId) {
     	double[] avgs = sampleCollector.calculateWeightedAverages(bandId);
     	
-    	for (int i=0; i<5; i++)
-    		System.out.println(avgs[i]);
+    	//for (int i=0; i<5; i++)
+    	//	System.out.println(avgs[i]);
     	
     	if (avgs[0] < oxygenSaturationThreshold)
     		return 0;
