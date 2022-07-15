@@ -86,10 +86,11 @@ public class MySQLManager {
 
     public void updateRackSensor (RackSensor rackSensor) {
         try (
-                PreparedStatement statement = connection.prepareStatement("UPDATE rack_sensor SET alarm = ? WHERE idsensor = ?")
+                PreparedStatement statement = connection.prepareStatement("UPDATE rack_sensor SET alarm = ? WHERE idsensor = ? AND type = ?")
         ){
             statement.setBoolean(1, rackSensor.getAlarm());
             statement.setString(2, rackSensor.getRackSensorId());
+            statement.setString(3, rackSensor.getType());
 
             if (statement.executeUpdate() != 1) throw new Exception("ERROR: not valid id " + rackSensor.getRackSensorId());
         }
