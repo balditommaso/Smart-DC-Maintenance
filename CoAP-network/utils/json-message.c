@@ -3,12 +3,12 @@
 #include "json-message.h"
 #include "../sensor-signs/sensor-sample-constants.h"
 
-void set_json_msg_sensor_registration(char *message_buffer, size_t size, char *sensor_id, char* type)
+void set_json_msg_sensor_registration(char *message_buffer, size_t size, char* type)
 {
     memset(message_buffer, 0, size);
     snprintf(message_buffer,
                 size,
-                "{\"rackSensorId\": \"%s\", \"type\": \"%s\"}",
+                "{\"type\": \"%s\"}",
                 sensor_id,
                 type);
 }

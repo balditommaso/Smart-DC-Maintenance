@@ -1,5 +1,5 @@
 
-void set_json_msg_sensor_registration(char *message_buffer, size_t size, char *sensor_id, char *type);
+void set_json_msg_sensor_registration(char *message_buffer, size_t size, char *type);
 
 void set_json_msg_sample(char *message_buffer, size_t size, int value);
 

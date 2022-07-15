@@ -1,9 +1,9 @@
 CONTIKI_PROJECT = coap-server
 all: $(CONTIKI_PROJECT)
-PLATFORMS_ONLY = cc26x0-cc13x0
+#PLATFORMS_ONLY = cc26x0-cc13x0
 
 # Do not try to build on Sky because of code size limitation
-PLATFORMS_EXCLUDE = sky z1
+PLATFORMS_EXCLUDE = sky z1 nrf52dk
 
 CONTIKI=../../../..
 SDCM = ../../

@@ -25,7 +25,6 @@
 #define LOG_LEVEL LOG_LEVEL_APP
 
 struct coap_rack {
-    char rack_id[COAP_ID_LENGTH];
     clock_time_t state_check_interval;
     struct etimer state_check_timer;
     uint8_t state;
@@ -67,9 +66,6 @@ static void is_connected()
     if (NETSTACK_ROUTING.node_is_reachable()) 
     {
         LOG_INFO("The Border Router is reachable\n");
-        uiplib_ipaddr_snprint(rack.rack_id,
-                            COAP_ID_LENGTH,
-                            &(uip_ds6_get_global(ADDR_PREFERRED)->ipaddr));
         rack.state = COAP_STATE_NETWORK_OK;
     }
     else 
@@ -124,7 +120,7 @@ PROCESS_THREAD(contiki_coap_server, ev, data)
 
                 // prepare the message
                 char message[COAP_CHUNK_SIZE];
-                set_json_msg_sensor_registration(message, COAP_CHUNK_SIZE, rack.rack_id, COAP_TEMPERATURE_PATH);
+                set_json_msg_sensor_registration(message, COAP_CHUNK_SIZE, COAP_TEMPERATURE_PATH);
                 coap_init_message(request, COAP_TYPE_CON, COAP_POST, 0);
                 coap_set_header_uri_path(request, SERVER_SERVICE);
                 coap_set_payload(request, (uint8_t*)message, sizeof(message)-1);
