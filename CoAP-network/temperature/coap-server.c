@@ -1,29 +1,26 @@
-
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "os/sys/log.h"
 #include "contiki.h"
 #include "coap-engine.h"
-#include "sys/etimer.h"
-#include "sys/ctimer.h"
-#include "dev/leds.h"
 #include "coap-blocking-api.h"
+#include "sys/etimer.h"
+#include "net/ipv6/uip-ds6.h"
+#include "dev/leds.h"
+#include "net/routing/routing.h"
 
-#include "node-id.h"
 #include "net/ipv6/uip-icmp6.h"
 #include "net/ipv6/sicslowpan.h"
 #include "net/ipv6/simple-udp.h"
 #include "net/ipv6/uip.h"
-#include "net/ipv6/uip-ds6.h"
 #include "net/ipv6/uip-debug.h"
-#include "net/routing/routing.h"
 
 #include "../sensor-signs/sensor-sample.h"
 #include "../utils/coap-server-constants.h"
 #include "../utils/json-message.h"
 
-#include <stdlib.h>
-#include <string.h>
-
 /* Log configuration */
-#include "sys/log.h"
 #define LOG_MODULE "Temperature Node"
 #define LOG_LEVEL LOG_LEVEL_APP
 
@@ -121,7 +118,7 @@ PROCESS_THREAD(contiki_coap_server, ev, data)
                 LOG_INFO("Sending registration message\n");
                 leds_single_toggle(LEDS_RED);
                 char url[COAP_URL_SIZE];
-                sprintf(url, "coap://[%s]:%d", SERVER_IP, SERVER_PORT);
+                snprintf(url, COAP_URL_SIZE, "coap://[%s]:%d", SERVER_IP, SERVER_PORT);
                 LOG_INFO("Try to register to %s\n", url);
                 coap_endpoint_parse(url, strlen(url), &server_endpoint);      
 
