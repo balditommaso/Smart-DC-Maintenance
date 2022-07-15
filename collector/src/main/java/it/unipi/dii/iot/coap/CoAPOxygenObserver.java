@@ -56,6 +56,7 @@ public class CoAPOxygenObserver {
 
                         OxygenSample sample = parser.fromJson(reader, OxygenSample.class);
                         sample.setId(rack.getRackSensorId());
+                        sample.setValue((int) sample.getValue());
 
                         // ADD to DB
                         mySQLManager.insertOxygenSample(sample);

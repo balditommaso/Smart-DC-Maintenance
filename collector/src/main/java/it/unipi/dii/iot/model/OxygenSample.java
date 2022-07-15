@@ -6,9 +6,9 @@ public class OxygenSample {
     private String id;
     private float value;
 
-    public OxygenSample(String id, int value) {
+    public OxygenSample(String id, float value) {
         this.id = id;
-        this.value = (float) value / 10;
+        this.value =  value;
     }
 
     public String getId() {
@@ -24,6 +24,6 @@ public class OxygenSample {
     }
 
     public void setValue(int value) {
-        this.value = value;
+        this.value = (float) value/10;
     }
 }
