@@ -9,7 +9,6 @@ void set_json_msg_sensor_registration(char *message_buffer, size_t size, char* t
     snprintf(message_buffer,
                 size,
                 "{\"type\": \"%s\"}",
-                sensor_id,
                 type);
 }
 

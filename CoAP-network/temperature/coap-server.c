@@ -8,10 +8,8 @@
 #include "sys/etimer.h"
 #include "net/ipv6/uip-ds6.h"
 #include "dev/leds.h"
-#include "net/routing/routing.h"
+#include "routing/routing.h"
 
-#include "net/ipv6/uip-icmp6.h"
-#include "net/ipv6/sicslowpan.h"
 #include "net/ipv6/simple-udp.h"
 #include "net/ipv6/uip.h"
 #include "net/ipv6/uip-debug.h"
