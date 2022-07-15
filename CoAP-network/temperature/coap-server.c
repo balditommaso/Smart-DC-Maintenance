@@ -104,7 +104,7 @@ PROCESS_THREAD(contiki_coap_server, ev, data)
         {
             if (rack.state == COAP_STATE_INIT)
             {
-                leds_single_toggle(LEDS_RED);
+                leds_single_on(LEDS_RED);
                 is_connected();
             }
             else if (rack.state == COAP_STATE_NETWORK_OK)

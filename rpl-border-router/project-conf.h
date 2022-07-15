@@ -43,4 +43,7 @@
 #define UIP_CONF_TCP 1
 #endif
 
+#define IEEE802154_CONF_DEFAULT_CHANNEL 25
+#define RF_BLE_CONF_ENABLED 1
+
 #endif /* PROJECT_CONF_H_ */

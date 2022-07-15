@@ -22,8 +22,8 @@ MODULES_REL += $(SDCM)/CoAP-network/utils
 MODULES_REL += $(SDCM)/CoAP-network/sensor-signs
 MODULES_REL += ./resources
 
-MAKE_NET_IPV6 = 1
-MAKE_MAC ?= MAKE_MAC_CSMA
-MAKE_NET = MAKE_NET_IPV6
+#MAKE_NET_IPV6 = 1
+#MAKE_MAC ?= MAKE_MAC_CSMA
+#MAKE_NET = MAKE_NET_IPV6
 
 include $(CONTIKI)/Makefile.include
