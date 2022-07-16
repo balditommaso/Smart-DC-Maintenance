@@ -44,13 +44,13 @@ static void ventilation_put_handler(coap_message_t *request, coap_message_t *res
         memcpy(mode, text, len);
         if (strncmp(mode, "ON", len) == 0)
         {
-            leds_toggle(LEDS_GREEN);
+            leds_toggle(LEDS_RED);
             active = true;
             LOG_INFO("Dehumidifier ON\n");
         }
         else if (strncmp(mode, "OFF", len) == 0)
         {
-            leds_on(LEDS_GREEN);
+            leds_on(LEDS_RED);
             active = false;
             LOG_INFO("Dehumidifier OFF\n");
         }
