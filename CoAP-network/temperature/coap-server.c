@@ -7,7 +7,7 @@
 #include "coap-blocking-api.h"
 #include "sys/etimer.h"
 #include "net/ipv6/uip-ds6.h"
-#include "dev/leds.h"
+#include "os/dev/leds.h"
 #include "routing/routing.h"
 
 #include "net/ipv6/simple-udp.h"
@@ -86,7 +86,6 @@ PROCESS_THREAD(contiki_coap_server, ev, data)
     LOG_INFO("Process Started");
     // rack sensor not active yet
     init_rack_state();
-    leds_single_on(LEDS_RED);
     // activate the resource
     LOG_INFO("Starting the rack-sensor CoAP Server\n");
     coap_activate_resource(&res_temperature, COAP_TEMPERATURE_PATH);
@@ -104,13 +103,13 @@ PROCESS_THREAD(contiki_coap_server, ev, data)
         {
             if (rack.state == COAP_STATE_INIT)
             {
-                leds_single_on(LEDS_RED);
+                leds_on(LEDS_RED);
                 is_connected();
             }
             else if (rack.state == COAP_STATE_NETWORK_OK)
             {
                 LOG_INFO("Sending registration message\n");
-                leds_single_toggle(LEDS_RED);
+                leds_toggle(LEDS_RED);
                 char url[COAP_URL_SIZE];
                 snprintf(url, COAP_URL_SIZE, "coap://[%s]:%d", SERVER_IP, SERVER_PORT);
                 LOG_INFO("Try to register to %s\n", url);
@@ -128,8 +127,8 @@ PROCESS_THREAD(contiki_coap_server, ev, data)
             }
             else if (rack.state == COAP_STATE_ACTIVE)
             {
-                leds_single_off(LEDS_RED);
-                leds_single_on(LEDS_GREEN);
+                leds_off(LEDS_RED);
+                leds_on(LEDS_GREEN);
                 res_temperature.trigger();
             }
             else

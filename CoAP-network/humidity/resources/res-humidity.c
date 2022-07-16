@@ -5,7 +5,6 @@
 #include <stdint.h>
 #include "contiki.h"
 #include "coap-engine.h"
-#include "dev/leds.h"
 #include "sys/node-id.h"
 #include "../utils/coap-server-constants.h"
 #include "../utils/json-message.h"
@@ -77,13 +76,11 @@ static void humidity_put_handler(coap_message_t *request, coap_message_t *respon
         memcpy(mode, text, len);
         if (strncmp(mode, "ON", len) == 0)
         {
-            leds_single_on(LEDS_RED);
             hum_sensor.alarm = true;
             LOG_INFO("Enable alarm: %d\n", hum_sensor.humidity);
         }
         else if (strncmp(mode, "OFF", len) == 0)
         {
-            leds_single_off(LEDS_RED);
             hum_sensor.alarm = false;
             LOG_INFO("Disabled alarm: %d\n", hum_sensor.humidity);
         }

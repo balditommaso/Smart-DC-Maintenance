@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include "contiki.h"
 #include "coap-engine.h"
-#include "dev/leds.h"
+#include "os/dev/leds.h"
 #include "sys/node-id.h"
 #include "../utils/coap-server-constants.h"
 #include "../utils/json-message.h"
@@ -44,13 +44,13 @@ static void ventilation_put_handler(coap_message_t *request, coap_message_t *res
         memcpy(mode, text, len);
         if (strncmp(mode, "ON", len) == 0)
         {
-            leds_single_toggle(LEDS_GREEN);
+            leds_toggle(LEDS_GREEN);
             active = true;
             LOG_INFO("O2 Ventilation ON\n");
         }
         else if (strncmp(mode, "OFF", len) == 0)
         {
-            leds_single_on(LEDS_GREEN);
+            leds_on(LEDS_GREEN);
             active = false;
             LOG_INFO("O2 Ventilation OFF\n");
         }

@@ -10,7 +10,7 @@
 #define HUMIDITY_UPPER_BOUND                  75
 
 /* Oxygen constants */
-#define OXYGEN_LOWER_BOUND                    12
-#define OXYGEN_GOOD_VALUE                     16
-#define OXYGEN_UPPER_BOUND                    25
+#define OXYGEN_LOWER_BOUND                    120
+#define OXYGEN_GOOD_VALUE                     160
+#define OXYGEN_UPPER_BOUND                    250
 #define OXYGEN_UNIT                           "%"          

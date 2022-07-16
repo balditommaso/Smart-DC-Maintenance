@@ -8,13 +8,12 @@
 #include "sys/ctimer.h"
 #include "lib/sensors.h"
 #include "dev/button-hal.h"
-#include "dev/leds.h"
+#include "os/dev/leds.h"
 #include "os/sys/log.h"
 #include "mqtt-client.h"
 #include "./band-samples/band-sample.h"
 #include "./utils/json-message.h"
 #include "./utils/mqtt-client-constants.h"
-
 #include <string.h>
 #include <strings.h>
 
@@ -258,7 +257,7 @@ static void handle_state_subscribed(void)
     publish(band.topic_buffer, band.output_buffer);
     
     leds_off(LEDS_ALL);
-    leds_set(LEDS_NUM_TO_MASK(LEDS_RED));
+    leds_on(LEDS_RED);
         
 	band.state = MQTT_BAND_STATE_INACTIVE;
 }
@@ -272,7 +271,7 @@ static void handle_button_press(button_hal_button_t *button)
         LOG_INFO("Band %s activated.\n", band.band_id);
             
         leds_off(LEDS_ALL);
-        leds_set(LEDS_NUM_TO_MASK(LEDS_GREEN));
+        leds_on(LEDS_GREEN);
         
         set_json_msg_status(band.output_buffer, MQTT_BAND_OUTPUT_BUFFER_SIZE, true);
         publish(band.topic_buffer, band.output_buffer);
@@ -286,7 +285,7 @@ static void handle_button_press(button_hal_button_t *button)
        	band.battery_level = (band.battery_level < 100)?band.battery_level+1:100;
                     
         leds_off(LEDS_ALL);
-        leds_set(LEDS_NUM_TO_MASK(LEDS_RED));
+        leds_on(LEDS_RED);
         
         set_json_msg_status(band.output_buffer, MQTT_BAND_OUTPUT_BUFFER_SIZE, false);
         publish(band.topic_buffer, band.output_buffer);
@@ -297,7 +296,7 @@ static void handle_button_press(button_hal_button_t *button)
     	LOG_INFO("Band %s Alert stopped.\n", band.band_id);
     	
     	leds_off(LEDS_ALL);
-        leds_set(LEDS_NUM_TO_MASK(LEDS_RED));
+        leds_on(LEDS_RED);
         
         set_json_msg_alert_stopped(band.output_buffer, MQTT_BAND_OUTPUT_BUFFER_SIZE);
         publish(band.topic_buffer, band.output_buffer);
@@ -352,9 +351,9 @@ static void handle_state_alert_on()
     leds_off(LEDS_ALL);
     	
     if (alternate) 
-    	leds_set(LEDS_NUM_TO_MASK(LEDS_GREEN));
+    	leds_on(LEDS_GREEN);
     else 
-    	leds_set(LEDS_NUM_TO_MASK(LEDS_RED));
+    	leds_on(LEDS_RED);
 }
 
 /*---------------------------------------------------------------------------*/
