@@ -25,9 +25,9 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 1,
+  "id": 2,
   "links": [],
-  "liveNow": false,
+  "liveNow": true,
   "panels": [
     {
       "collapsed": false,
@@ -43,10 +43,7 @@
       "type": "row"
     },
     {
-      "datasource": {
-        "type": "mysql",
-        "uid": "OEUUSGR4k"
-      },
+      "datasource": {},
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -141,7 +138,7 @@
     {
       "datasource": {
         "type": "mysql",
-        "uid": "OEUUSGR4k"
+        "uid": "JQyocVg4k"
       },
       "description": "",
       "fieldConfig": {
@@ -210,6 +207,7 @@
           },
           "format": "table",
           "group": [],
+          "hide": false,
           "metricColumn": "none",
           "rawQuery": true,
           "rawSql": "SELECT idband,\n  alertOn\nFROM band_device\n",
@@ -250,7 +248,7 @@
     {
       "datasource": {
         "type": "mysql",
-        "uid": "OEUUSGR4k"
+        "uid": "JQyocVg4k"
       },
       "fieldConfig": {
         "defaults": {
@@ -365,7 +363,7 @@
     {
       "datasource": {
         "type": "mysql",
-        "uid": "OEUUSGR4k"
+        "uid": "JQyocVg4k"
       },
       "fieldConfig": {
         "defaults": {
@@ -447,6 +445,7 @@
           },
           "format": "time_series",
           "group": [],
+          "hide": false,
           "metricColumn": "none",
           "rawQuery": true,
           "rawSql": "SELECT\n  timestamp AS \"time\",\n  value AS \"temperature level\"\nFROM temperature_samples\nWHERE\n  $__timeFilter(timestamp)\nORDER BY timestamp",
@@ -480,20 +479,116 @@
     {
       "datasource": {
         "type": "mysql",
-        "uid": "OEUUSGR4k"
+        "uid": "JQyocVg4k"
       },
       "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "continuous-BlYlRd"
+            "mode": "continuous-GrYlRd"
+          },
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "green",
+                  "index": 0,
+                  "text": "Ok"
+                },
+                "1": {
+                  "color": "red",
+                  "index": 1,
+                  "text": "Alert!"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 19
+      },
+      "id": 20,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": true
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": false
+      },
+      "pluginVersion": "9.0.3",
+      "targets": [
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "OEUUSGR4k"
+          },
+          "format": "table",
+          "group": [],
+          "hide": false,
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT type,\n  alarm\nFROM rack_sensor\n",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "alertOn"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "band_device",
+          "timeColumn": "timestamp",
+          "timeColumnType": "timestamp",
+          "where": []
+        }
+      ],
+      "title": "Rack Sensors Status",
+      "transparent": true,
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "mysql",
+        "uid": "JQyocVg4k"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
           },
           "custom": {
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
             "drawStyle": "line",
-            "fillOpacity": 29,
+            "fillOpacity": 30,
             "gradientMode": "none",
             "hideFrom": {
               "legend": false,
@@ -501,7 +596,7 @@
               "viz": false
             },
             "lineInterpolation": "linear",
-            "lineWidth": 3,
+            "lineWidth": 1,
             "pointSize": 5,
             "scaleDistribution": {
               "type": "linear"
@@ -521,15 +616,16 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": null
               },
               {
                 "color": "red",
-                "value": 50
+                "value": 45
               },
               {
                 "color": "red",
-                "value": 60
+                "value": 60.0001
               }
             ]
           }
@@ -537,34 +633,13 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 9,
+        "h": 8,
         "w": 12,
-        "x": 6,
+        "x": 12,
         "y": 19
       },
-      "id": 2,
-      "libraryPanel": {
-        "meta": {
-          "connectedDashboards": 1,
-          "created": "2022-07-15T12:27:48Z",
-          "createdBy": {
-            "avatarUrl": "/avatar/46d229b033af06a191ff2267bca9ae56",
-            "id": 1,
-            "name": "admin"
-          },
-          "folderName": "",
-          "folderUid": "",
-          "updated": "2022-07-15T21:01:36.663721971Z",
-          "updatedBy": {
-            "avatarUrl": "/avatar/46d229b033af06a191ff2267bca9ae56",
-            "id": 1,
-            "name": "admin"
-          }
-        },
-        "name": "Panel Title",
-        "uid": "DRqALZgVz",
-        "version": 5
-      },
+      "id": 18,
+      "maxDataPoints": 100,
       "options": {
         "legend": {
           "calcs": [],
@@ -585,9 +660,10 @@
           },
           "format": "time_series",
           "group": [],
-          "metricColumn": "value",
+          "hide": false,
+          "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "SELECT\n  timestamp AS \"time\",\n  value AS \"humidity level\"\nFROM humidity_samples\nWHERE\n  $__timeFilter(timestamp)\nORDER BY timestamp",
+          "rawSql": "SELECT\n  timestamp AS \"time\",\n  value AS \"humidity level\"\nFROM humidity_samples\nWHERE\n  timestamp > now() - interval 5 hour\nORDER BY timestamp",
           "refId": "A",
           "select": [
             [
@@ -596,22 +672,10 @@
                   "value"
                 ],
                 "type": "column"
-              },
-              {
-                "params": [
-                  "avg"
-                ],
-                "type": "aggregate"
-              },
-              {
-                "params": [
-                  "value"
-                ],
-                "type": "alias"
               }
             ]
           ],
-          "table": "humidity_samples",
+          "table": "temperature_samples",
           "timeColumn": "timestamp",
           "timeColumnType": "timestamp",
           "where": [
@@ -628,7 +692,7 @@
       "type": "timeseries"
     }
   ],
-  "refresh": false,
+  "refresh": "5s",
   "schemaVersion": 36,
   "style": "dark",
   "tags": [],
@@ -636,13 +700,13 @@
     "list": []
   },
   "time": {
-    "from": "2022-07-15T11:59:56.087Z",
-    "to": "2022-07-15T23:59:56.087Z"
+    "from": "now-5m",
+    "to": "now"
   },
   "timepicker": {},
   "timezone": "",
-  "title": "Smart Data Center Maintenance",
-  "uid": "KWosIGR4k",
-  "version": 20,
+  "title": "Smart Data Center Maintenance v1.0.0",
+  "uid": "KWosIGR4t",
+  "version": 9,
   "weekStart": ""
 }
