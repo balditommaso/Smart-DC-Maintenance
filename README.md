@@ -9,10 +9,11 @@ More informetion about the project are available in the documentation.
 ## Repository
 
 The repository is organized as follows:
-- *TOSApp/* contains the single page web application which use our model
-- *dataset/* contains the dataset used to fine tune our model
-- *notebooks/* contains the notebooks used to train and test the model
-- *scraping/* contains the python scripts to scrape the data drom the web
+- *CoAP-network/* contains the implementation of the CoAP network carried out by microcontrollers
+- *Grafana/* contains the implementation of the web based dashboard to visualize the telemetry signals
+- *MQTT-network/* contains the implementation of the MQTT network carried out by microcontrollers
+- *collector/* contains the Java program in execution on the master node to coordinate all the communication and the access to the DB
+- *rpl-border-router* contains the code that allow the microcontrollers to be accessible from the web
 
 ## Contributors
 - Tommaso Baldi [@balditommaso](https://github.com/balditommaso)
